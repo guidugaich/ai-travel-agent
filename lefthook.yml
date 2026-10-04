@@ -1,0 +1,31 @@
+# Installed by `pnpm install` through the root `prepare` script.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      run: pnpm exec prettier --check --ignore-unknown {staged_files}
+    - name: lint
+      glob: "*.{ts,js,mjs,cjs}"
+      run: pnpm exec eslint --no-warn-ignored {staged_files}
+    - name: secrets
+      run: pnpm exec secretlint {staged_files}
+    - name: typecheck
+      run: pnpm typecheck
+      timeout: 120s
+    - name: test
+      run: pnpm test
+      timeout: 120s
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: format
+      run: pnpm format:check
+    - name: lint
+      run: pnpm lint
+      timeout: 180s
+    - name: deps
+      run: pnpm deps:check
+    - name: test
+      run: pnpm test
+      timeout: 180s

@@ -2,3 +2,5 @@ packages:
   - packages/*
   - apps/api
   - apps/telegram-bot
+allowBuilds:
+  lefthook: false

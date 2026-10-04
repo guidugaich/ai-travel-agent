@@ -1,0 +1,16 @@
+{
+  "name": "@ai-travel-agent/agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-travel-agent/contracts": "workspace:*",
+    "@ai-travel-agent/core": "workspace:*"
+  }
+}
