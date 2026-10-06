@@ -1,4 +1,6 @@
 # Installed by `pnpm install` through the root `prepare` script.
+rc: scripts/use-project-node.sh
+
 pre-commit:
   parallel: true
   jobs:
