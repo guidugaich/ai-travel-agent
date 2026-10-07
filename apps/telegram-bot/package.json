@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@ai-travel-agent/agent": "workspace:*",
-    "@ai-travel-agent/contracts": "workspace:*",
     "@ai-travel-agent/core": "workspace:*"
   }
 }

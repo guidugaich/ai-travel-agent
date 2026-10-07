@@ -206,43 +206,22 @@ importers:
         specifier: 5.0.3
         version: 5.0.3(@types/node@24.19.1)(@vitest/coverage-v8@5.0.3)(vite@8.3.2(@types/node@24.19.1))
 
-  apps/api:
-    dependencies:
-      '@ai-travel-agent/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@ai-travel-agent/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-
   apps/telegram-bot:
     dependencies:
       '@ai-travel-agent/agent':
         specifier: workspace:*
         version: link:../../packages/agent
-      '@ai-travel-agent/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@ai-travel-agent/core':
         specifier: workspace:*
         version: link:../../packages/core
 
   packages/agent:
     dependencies:
-      '@ai-travel-agent/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@ai-travel-agent/core':
         specifier: workspace:*
         version: link:../core
 
-  packages/contracts: {}
-
-  packages/core:
-    dependencies:
-      '@ai-travel-agent/contracts':
-        specifier: workspace:*
-        version: link:../contracts
+  packages/core: {}
 
 packages:
 

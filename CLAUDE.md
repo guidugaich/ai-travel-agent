@@ -1,25 +1,39 @@
 # ai-travel-agent
 
-A chat-first AI travel agent: plans trips from loose ideas, keeps a structured plan that is never wrong about time, and later books through affiliate links. Telegram comes first; other channels, web and mobile clients come later and reuse the same core.
+A chat-first AI travel agent: plans trips from loose ideas, keeps a structured plan that is never wrong about time, and later books through affiliate links. Telegram comes first; web and mobile clients come later and reuse the same core.
 
 The brand name is undecided. Write "the agent" or "the app"; never hardcode a product, persona or tone.
 
-Overview: [README.md](README.md). System map: [ARCHITECTURE.md](ARCHITECTURE.md). Decisions: [docs/adr/](docs/adr/). Specs: [docs/specs/](docs/specs/). Concepts: [docs/learning/glossary.md](docs/learning/glossary.md).
+Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](docs/roadmap.md). System map: [ARCHITECTURE.md](ARCHITECTURE.md). Decisions: [docs/adr/](docs/adr/). Concepts: [docs/learning/glossary.md](docs/learning/glossary.md).
 
-## Phase
+## How we work
 
-**Phase 0 (bootstrap).** Tooling only, no product code. Phase order: 0 bootstrap → 1 specs → 2 ADRs → 3 test harness → 4+ feature slices. Stop at every phase gate for the user's review. No application code before the Phase 1 specs are approved.
+- **Simplicity first.** Build the simplest thing that works. Add packages, abstractions, docs, tools and process only when a second real use appears, not in anticipation. When in doubt, leave it out.
+- **Work in slices.** Each slice is a small version of the app the user can actually use. For each one:
+  1. Write a short spec in `docs/slices/` (what the user can do, example questions with exact expected answers, decisions with recommendations). The user reviews it.
+  2. Build it test-first in small steps: a failing test, then the code. Show each new test failing first.
+  3. The user tries it, then the next slice begins.
+- **Explain as you go.** The user is learning AI engineering. Explain new concepts in plain web-backend terms, add them to the glossary, and explain every new file in the same message that adds it.
+- **Current step:** the product doc and roadmap are in review. Next: the slice 1 spec.
 
 ## Principles
 
 - The LLM never knows the time or does time arithmetic. Deterministic code does, and the model calls it as tools. The same goes for other facts that change: prices, availability, entry rules.
-- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time and weekday, and the active trip/leg.
-- Future events are stored as local wall time plus an IANA zone, and UTC is derived when needed. Flights have separate departure and arrival zones. Durations are computed, never stored.
+- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time, and the active trip.
+- Future events are stored as local wall time plus an IANA zone; UTC is derived when needed. Durations are computed, never stored.
 - Ambiguity leads to a clarifying question, never a guess.
-- The plan changes only through typed, validated application-service commands that return diffs. Ambiguous or destructive changes need confirmation. Changes go into an append-only change log. Agent, API and any UI share this single mutation path.
+- The plan changes only through core services that validate the change and return a diff. Ambiguous or destructive changes need the user's confirmation.
 - No code reads the system clock; a Clock is injected.
-- Provider-agnostic LLM: core depends on our own LLM port, vendor SDKs live only in adapters, and evals decide which model to use.
-- Privacy by design: keep location and personal data only as long as needed, and never put secrets or personal data in the repo, logs or fixtures.
+- The agent depends on our own LLM port, and vendor SDKs live only in adapters. Evals decide which model to use.
+- Privacy by design: no secrets or personal data in the repo, logs or test data.
+
+## Architecture rules (hexagonal)
+
+- `packages/core` holds all business logic and depends on nothing. It imports no other package, no app, no Node built-ins, and no Telegram, HTTP, LLM-vendor or database libraries. `.dependency-cruiser.cjs` enforces this.
+- Dependencies point inwards: `apps/*` → `packages/agent` → `packages/core`.
+- Core services speak domain language (`userId`, `tripId`), never channel concepts such as a Telegram chat id. Adapters map identities.
+- Every plan change goes through a core service. Agent tools are thin wrappers over them.
+- Ports are defined by the side that needs them. Driven adapters (database, clock, LLM provider) live in the app until a second app needs them.
 
 ## Commands
 
@@ -34,37 +48,31 @@ Node comes from `.nvmrc` (`nvm use`), and pnpm is pinned in `package.json`.
 | `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest                             |
 | `pnpm secrets:check`                         | secretlint                         |
-| The eval command is added in Phase 3.        |
-
-## Boundaries
-
-`apps/*` → `packages/agent` → `packages/core` → `packages/contracts`. Imports never point the other way. `core` and `contracts` import no Node built-ins and no channel, HTTP, LLM-vendor or database libraries. These rules are enforced by [.dependency-cruiser.cjs](.dependency-cruiser.cjs).
 
 ## Conventions
 
-- TypeScript strict, no `any`, exhaustive switches, zod at every boundary.
-- Process: spec → acceptance criteria → failing test → implementation → refactor → docs. Show each new test failing before implementing.
+- TypeScript strict, no `any`, exhaustive switches, zod to validate data at boundaries.
 - Tests sit next to the code as `*.test.ts`.
-- Every significant decision gets an ADR in `docs/adr/` (template there).
+- Write an ADR in `docs/adr/` only for decisions that are costly to reverse. Smaller decisions go in the slice spec.
 - Never invent a library API. Read the installed package or its docs, and verify by running code.
-- Code comments: rare, one line, only for non-obvious reasoning. Rationale goes in ADRs and commit messages.
+- Code comments: rare, one line, only for non-obvious reasoning.
 - Conventional commit messages, as a habit (not enforced).
-- When conventions or boundaries change, update this file and ARCHITECTURE.md. When a new concept is introduced, add it to the glossary.
+- When conventions or boundaries change, update this file and ARCHITECTURE.md.
 
 ## Git
 
-The user reviews and makes every commit and push. Claude edits files only, never runs `git add`, `git commit` or `git push`, and suggests a commit message instead. A Claude Code hook blocks `git commit`. From Phase 1 on: one feature per branch.
+The user reviews and makes every commit and push, straight to `main`. Claude edits files only, never runs `git add`, `git commit` or `git push`, and suggests a commit message instead. A Claude Code hook blocks `git commit`.
 
-## Definition of done
+## Definition of done (per slice)
 
-- The spec and acceptance criteria exist and are met.
-- Tests were written first. `pnpm check` passes locally and CI is green.
-- Affected docs are updated: spec, ADR, ARCHITECTURE.md, glossary.
+- Every example in the slice spec gives the expected answer.
+- Tests were written first. `pnpm check` passes and CI is green.
+- Affected docs are updated: README status, ARCHITECTURE.md, glossary.
 
 ## Never
 
 - Hardcode the brand, persona name or tone. They are configuration.
-- Import Node built-ins, or channel, HTTP, LLM-vendor or database libraries, into `core` or `contracts`.
+- Break the core's isolation (see Architecture rules).
 - Read the system clock directly: `Date.now()`, `new Date()`, `Temporal.Now`, `performance.now()`.
 - Let the LLM compute times, or let it rewrite the plan as free text.
 - Commit secrets or personal data, or edit `.env*` files (`.env.example` is the exception).

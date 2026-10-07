@@ -20,10 +20,10 @@ Use ADRs in `docs/adr/`, numbered `NNNN-title.md`, following [template.md](templ
 - **One ADR per significant decision.** That means anything costly to reverse or likely to be questioned: stack, libraries, boundaries, data model, protocols, hosting.
 - **Accepted ADRs are not edited** beyond typo fixes. To change a decision, write a new ADR and mark the old one "Superseded by NNNN".
 - **External facts carry a source and a date**, such as a library version or a pricing page, because they go stale.
-- **The order of authority:** specs (`docs/specs/`) describe _what_ the system must do, ADRs record _why_ it's built this way, and `ARCHITECTURE.md` is the map that links them.
+- **The order of authority:** the product doc, roadmap and slice specs describe _what_ the system must do, ADRs record _why_ it's built this way, and `ARCHITECTURE.md` is the map that links them.
 
 ## Consequences
 
 - A small writing cost per decision, paid once.
 - Questions like "why TypeScript 6 and not 7?" have a findable answer.
-- Phase 2 produces one ADR per topic listed in the project brief.
+- ADRs get written when a slice makes a decision that is costly to reverse, such as the database or the time library. Smaller decisions live in the slice spec.

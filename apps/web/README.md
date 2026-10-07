@@ -1,5 +1,5 @@
 # apps/web (reserved)
 
-Future web client. It is not a workspace yet and has no code.
+Future web client. It isn't a workspace yet and has no code.
 
-It will talk to the core only through the versioned HTTP API (`apps/api`), using types from `packages/contracts`. See [ARCHITECTURE.md](../../ARCHITECTURE.md).
+When it starts, it will be joined by `apps/api`, an HTTP adapter over the core services, and `packages/contracts`, the request and response shapes shared with the client. The core doesn't change. See [ARCHITECTURE.md](../../ARCHITECTURE.md#adding-a-client-later).

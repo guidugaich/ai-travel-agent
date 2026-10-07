@@ -17,38 +17,32 @@ The same principle covers other facts that change, such as prices, availability 
 
 ## Current state
 
-**Phase 0 (bootstrap) is in progress.** The repository has its tooling and guardrails, but no product code yet.
+The tooling and guardrails are in place. There's no product code yet.
 
-| Phase              | Scope                                                                                                                             | Status      |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 0. Bootstrap       | Monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI                                                   | In progress |
-| 1. Specs           | Product brief, domain model, time semantics, tool contracts, conversation flows, eval plan, privacy, client architecture, roadmap | Next        |
-| 2. Architecture    | Architecture Decision Records (stack, time library, database, API, identity, LLM orchestration…)                                  | Planned     |
-| 3. Test harness    | Injectable clock, time edge-case fixtures, scripted fake LLM, database test setup, architecture tests, eval runner                | Planned     |
-| 4+. Feature slices | Thin end-to-end features, starting with time questions over a trip                                                                | Planned     |
+The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 
-Planned feature slices, in order:
-
-1. Answer time questions about a trip.
-2. Change the plan, with preview, confirm and undo.
-3. Turn a loose idea into a draft trip.
-4. Personalization.
-5. Affiliate booking links.
+| Step                                                                                     | Status    |
+| ---------------------------------------------------------------------------------------- | --------- |
+| Tooling: monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI | Done      |
+| [Product](docs/product.md) and [roadmap](docs/roadmap.md)                                | In review |
+| Slice 1: answer time questions about a trip                                              | Next      |
+| Slice 2: change the plan, with preview, confirm and undo                                 | Planned   |
+| Slice 3: turn a loose idea into a draft trip                                             | Planned   |
+| Slice 4: personalization                                                                 | Planned   |
+| Slice 5: affiliate booking links                                                         | Planned   |
 
 ## Repository layout
 
 ```
 packages/
-  contracts/      shared schemas and API types; depends on nothing internal
-  core/           domain, time logic, application services, ports; no I/O, no Node APIs
+  core/           business logic: domain, time rules, services, ports; no I/O, depends on nothing
   agent/          LLM loop, tools, prompts; provider-agnostic
 apps/
-  telegram-bot/   Telegram channel adapter (entry point)
-  api/            versioned HTTP API for future clients (entry point)
+  telegram-bot/   Telegram adapter and the program's entry point
   web/, mobile/   reserved for future clients
 ```
 
-Dependencies only point downwards (apps → agent → core → contracts). `pnpm deps:check` enforces this.
+The structure is hexagonal (ports and adapters): the core holds all business logic and knows nothing about Telegram, HTTP, databases or LLM vendors. Dependencies point inwards (apps → agent → core), and `pnpm deps:check` enforces it. [ARCHITECTURE.md](ARCHITECTURE.md) explains how a web or mobile client gets added later without changing the core.
 
 ## Prerequisites
 
@@ -89,7 +83,7 @@ pnpm check     # runs every check CI runs
 | ESLint + typescript-eslint | `any`, non-exhaustive `switch`, and reading the system clock directly (`Date.now()`, `new Date()`): time must come from an injected clock               |
 | Prettier                   | Formatting differences                                                                                                                                  |
 | dependency-cruiser         | Forbidden imports: packages importing apps, core importing Telegram/HTTP/LLM-vendor/database libraries or Node built-ins, import cycles                 |
-| Vitest                     | Regressions (the test suite grows from Phase 3)                                                                                                         |
+| Vitest                     | Regressions (tests arrive with slice 1)                                                                                                                 |
 | secretlint                 | API keys, tokens and private keys in committed files                                                                                                    |
 | lefthook                   | Runs the checks as git hooks. Pre-commit: format, lint and secrets on staged files, plus typecheck and tests. Pre-push: full lint, boundaries and tests |
 | GitHub Actions             | The same `pnpm check` on a clean machine for every push to `main` and every pull request                                                                |
@@ -98,12 +92,12 @@ pnpm is configured not to run third-party install scripts.
 
 ## How it's built
 
-Spec-driven and test-first. Every feature goes spec → acceptance criteria → failing test → implementation → refactor → docs. Significant decisions are recorded as Architecture Decision Records. The language model layer is provider-agnostic: the core talks to an LLM interface, and the choice of model is driven by evals.
+Simplicity first: the simplest thing that works, with structure added only when a second real use appears. Each slice starts with a short spec listing example questions and their expected answers, then gets built test-first: a failing test, then the code that makes it pass. Decisions that are costly to reverse are recorded as Architecture Decision Records. The language-model layer is provider-agnostic: the agent talks to an LLM interface, and evals decide the model, including locally hosted ones.
 
 Documentation:
 
 - [ARCHITECTURE.md](ARCHITECTURE.md): the system map, with diagrams.
-- [docs/specs/](docs/specs/): what the system must do (written in Phase 1).
+- [docs/product.md](docs/product.md) and [docs/roadmap.md](docs/roadmap.md): what we're building, and in what order.
 - [docs/adr/](docs/adr/): Architecture Decision Records, the reasons behind each significant choice.
 - [docs/learning/glossary.md](docs/learning/glossary.md): the AI-engineering and architecture concepts used here.
 - [CLAUDE.md](CLAUDE.md): working rules for AI coding sessions in this repo.

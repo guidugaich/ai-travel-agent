@@ -10,7 +10,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@ai-travel-agent/contracts": "workspace:*",
     "@ai-travel-agent/core": "workspace:*"
   }
 }

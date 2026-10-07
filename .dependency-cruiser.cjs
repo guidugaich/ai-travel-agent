@@ -16,26 +16,20 @@ module.exports = {
       to: { path: "^apps/", pathNot: "^apps/$1/" },
     },
     {
-      name: "contracts-is-a-leaf",
+      name: "core-imports-no-other-package",
       severity: "error",
-      comment: "contracts holds shared schemas and may not depend on any other package.",
-      from: { path: "^packages/contracts/" },
-      to: { path: "^packages/", pathNot: "^packages/contracts/" },
-    },
-    {
-      name: "core-only-to-contracts",
-      severity: "error",
-      comment: "core may depend on contracts only; the agent depends on core, not the reverse.",
+      comment:
+        "core is the centre of the hexagon: everything depends on it, it depends on nothing.",
       from: { path: "^packages/core/" },
-      to: { path: "^packages/", pathNot: "^packages/(core|contracts)/" },
+      to: { path: "^packages/", pathNot: "^packages/core/" },
     },
     {
       name: "core-no-channel-http-llm-or-db-libraries",
       severity: "error",
       comment:
-        "core and contracts stay channel-, transport-, vendor- and storage-agnostic. " +
+        "core stays channel-, transport-, vendor- and storage-agnostic. " +
         "Use a port in core and an adapter outside it.",
-      from: { path: "^packages/(core|contracts)/" },
+      from: { path: "^packages/core/" },
       to: {
         path: "(^|node_modules/)(grammy|telegraf|node-telegram-bot-api|express|fastify|hono|@anthropic-ai|openai|ai|@google/genai|ollama|pg|postgres)(/|$)",
       },
@@ -43,8 +37,8 @@ module.exports = {
     {
       name: "core-no-node-builtins",
       severity: "error",
-      comment: "core and contracts must run in browsers and React Native, so no Node built-ins.",
-      from: { path: "^packages/(core|contracts)/" },
+      comment: "core must be able to run in browsers and React Native, so no Node built-ins.",
+      from: { path: "^packages/core/" },
       to: { dependencyTypes: ["core"] },
     },
     {

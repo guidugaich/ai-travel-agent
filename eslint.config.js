@@ -3,8 +3,7 @@ import prettier from "eslint-config-prettier";
 import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
-const clockMessage =
-  "Reads the system clock. Inject a Clock instead (docs/specs/02-time-semantics.md).";
+const clockMessage = "Reads the system clock. Inject a Clock instead (see CLAUDE.md).";
 
 export default defineConfig([
   globalIgnores(["**/dist/", "**/coverage/"]),

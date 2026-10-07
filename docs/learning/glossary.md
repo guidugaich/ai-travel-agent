@@ -8,7 +8,13 @@ Concepts used in this project, explained in classic web-backend terms. Add an en
 
 **Monorepo / workspace.** One git repo holding several packages. pnpm links them, so `import "@ai-travel-agent/core"` resolves to `packages/core` like an npm package that is never published.
 
-**Ports and adapters (hexagonal architecture).** The core defines interfaces (_ports_) for what it needs from the outside world: a clock, storage, an LLM, notifications. _Adapters_ implement those ports for specific technologies (Postgres, Telegram, a given LLM provider). The core never imports an adapter, so technologies can be swapped and tests can use fakes.
+**Ports and adapters (hexagonal architecture).** All business logic sits in a core that knows no technology. Everything else plugs into it:
+
+- _Ports_ are interfaces describing what one side needs: "the current time", "this user's trips", "complete this conversation".
+- _Driving adapters_ call into the core: the Telegram bot now, an HTTP API for web and mobile later.
+- _Driven adapters_ implement ports with real technology: a database, the system clock, an LLM provider.
+
+The core never imports an adapter, so technologies can be swapped, new clients can be added without touching business logic, and tests can plug in fakes. See [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
 **Channel adapter.** An adapter for a messaging surface (Telegram, WhatsApp, web). It turns incoming messages into calls to the core, and turns the core's content blocks into that channel's format.
 
@@ -16,7 +22,7 @@ Concepts used in this project, explained in classic web-backend terms. Add an en
 
 **Webhook.** An HTTP request another service sends _to us_ when something happens. Telegram POSTs every new message to our webhook URL, the same way Stripe or GitHub webhooks work.
 
-**Vertical slice.** One thin feature built through every layer (channel → agent → core → database) so that it actually works for a user. Its opposite is building one whole layer at a time.
+**Slice (vertical slice).** A small but complete version of the app that a user can actually use. The next slice adds one capability on top. Think skateboard → scooter → bicycle → car: every step gets you somewhere. The opposite, wheel → axle → body → car, is useless until the end. Each slice builds a little of every layer (Telegram → agent → core → database). See [docs/roadmap.md](../roadmap.md).
 
 **ADR (Architecture Decision Record).** A short, dated file recording one significant decision: the context, the options considered, the choice, and the consequences. A commit message explains one change; an ADR explains one decision that shapes many changes. Once accepted, an ADR is never rewritten. A new ADR supersedes it instead, so the history stays readable. See [docs/adr/](../adr/).
 

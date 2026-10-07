@@ -1,5 +1,5 @@
 # apps/mobile (reserved)
 
-Future mobile client. It is not a workspace yet and has no code.
+Future mobile client. It isn't a workspace yet and has no code.
 
-It will talk to the core only through the versioned HTTP API (`apps/api`), using types from `packages/contracts`. See [ARCHITECTURE.md](../../ARCHITECTURE.md).
+Like the web client, it will use the core through `apps/api` and `packages/contracts`, added when the first non-chat client starts. The core doesn't change. See [ARCHITECTURE.md](../../ARCHITECTURE.md#adding-a-client-later).

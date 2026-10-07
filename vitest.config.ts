@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["{packages,apps}/*/src/**/*.test.ts"],
-    // Remove in Phase 3, once the harness adds real tests.
+    // Remove once slice 1 adds real tests.
     passWithNoTests: true,
     coverage: {
       provider: "v8",
