@@ -100,12 +100,13 @@ pnpm is configured not to run third-party install scripts.
 
 Spec-driven and test-first. Every feature goes spec → acceptance criteria → failing test → implementation → refactor → docs. Significant decisions are recorded as Architecture Decision Records. The language model layer is provider-agnostic: the core talks to an LLM interface, and the choice of model is driven by evals.
 
-Documentation is being written in Phase 0 and Phase 1:
+Documentation:
 
-- `ARCHITECTURE.md`: system map with diagrams.
-- `docs/specs/`: the specs.
-- `docs/adr/`: decision records.
-- `docs/learning/`: a glossary of the AI-engineering concepts used here.
+- [ARCHITECTURE.md](ARCHITECTURE.md): the system map, with diagrams.
+- [docs/specs/](docs/specs/): what the system must do (written in Phase 1).
+- [docs/adr/](docs/adr/): Architecture Decision Records, the reasons behind each significant choice.
+- [docs/learning/glossary.md](docs/learning/glossary.md): the AI-engineering and architecture concepts used here.
+- [CLAUDE.md](CLAUDE.md): working rules for AI coding sessions in this repo.
 
 ## License
 
