@@ -12,20 +12,6 @@ A travel agent you talk to in chat. It takes a loose idea ("Asia this summer", "
 2. **The plan is data, not prose.** Trips and events live in a database and change only through validated steps that you confirm. You can always undo.
 3. **Facts that change come from sources.** Prices, opening seasons and entry rules come from tools with sources, never from the model's memory.
 
-## Competitors
-
-Checked on 2026-10-07. Check again before making a decision that depends on it.
-
-| Group                       | Examples                                                                                             | What they cover                                                                    |
-| --------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| General assistants          | ChatGPT (Expedia and Booking.com apps), Google AI Mode and Gemini, Perplexity                        | Free planning from loose ideas and live prices. Booking finishes on partner sites. |
-| Assistants of booking sites | Expedia (owns Layla since July 2026), Booking.com AI Trip Planner, Kayak Ask AI, Priceline, Trip.com | Planning that leads to their own listings                                          |
-| AI-first startups           | Mindtrip, Airial, Stardrift, iMean, Wonderplan                                                       | Itineraries. Airial focuses on transfer times, Stardrift on frequent flyers.       |
-| Chat-app bots               | GuideGeek (WhatsApp, Instagram, Messenger)                                                           | Answers questions but doesn't plan. Nothing serious on Telegram.                   |
-| Trip organizers             | TripIt, Wanderlog                                                                                    | Structured trip data and flight alerts, with no chat agent                         |
-
-Still open: nobody advertises being correct about time, or plan changes that are validated and can be undone. Live facts with sources are expected, not a difference. Planning from a loose idea is the most crowded area. The ones to watch: Airial and Stardrift.
-
 ## Who it's for
 
 - **Now:** the author, on real trips. Only allowlisted Telegram accounts get answers.
@@ -73,3 +59,7 @@ Still open: nobody advertises being correct about time, or plan changes that are
 - Simplicity first: the simplest thing that works.
 - Under $20/month for hosting, EU region. LLM spend capped per user per day.
 - No secrets or personal data in the repo, logs or test data.
+
+## Competitors
+
+As of 2026-10-07: general assistants (ChatGPT, Gemini), booking-site assistants (Expedia, which owns Layla, plus Booking.com and Kayak), AI-first startups (Mindtrip, Airial, Stardrift), chat-app bots (GuideGeek) and trip organizers (TripIt, Wanderlog). Planning from a loose idea is crowded. Nobody advertises being correct about time, or plan changes that are validated and can be undone.
