@@ -7,13 +7,14 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 **After this slice you can, in Telegram:**
 
 - Ask "what time is it?" or "what time is it in Tokyo?" and get the right answer, with the timezone named.
-- Say where you are ("I'm in Lisbon") and the bot uses that timezone until you say otherwise. If you haven't said, it uses where your trip says you should be, and tells you so. If it can't tell, it asks.
+- Tap **Share my location**, or just say where you are ("I'm in Lisbon"), and the bot uses that timezone until you tell it otherwise. If you haven't told it, it uses where your trip says you should be, and says so. If it can't tell, it asks.
 - Ask "when is my next event?" about a trip loaded from a seed file. The answer shows the event's local time, your local time, and how long until then.
 - Ask "when do I need to leave for it?" and get a time with its assumptions spelled out ("45 min to the airport + 3 h before an international flight").
 
 **What gets built:**
 
-- a text-only Telegram adapter;
+- a Telegram adapter for text, plus a one-tap location share;
+- a coordinates-to-timezone lookup;
 - the agent loop;
 - a handful of time tools;
 - trip and event storage, with the seed file loader;
@@ -67,9 +68,9 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 ## Later (order decided when we get there)
 
 - Reminders ("leave in 30 minutes"), with quiet hours.
-- Automatic timezone from Telegram live location.
+- Timezone that follows you automatically, from Telegram live location.
 - Importing booking emails and screenshots, then proposing events for you to confirm.
 - Travel-time and flight-status data.
 - Sharing trips with companions.
-- A web app (which brings the HTTP API), then a mobile app.
+- A web or mobile app, which brings the HTTP API. Mobile likely comes first; see "Beyond chat" in [product.md](product.md).
 - More chat channels and languages.

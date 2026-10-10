@@ -25,18 +25,18 @@ A travel agent you talk to in chat. It takes a loose idea ("Asia this summer", "
 
 ## Decisions so far
 
-| Topic          | Decision                                                                                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| First users    | Just the author, through an allowlisted Telegram account                                                                                                                                          |
-| LLM costs      | The author pays, with a hard daily cap per user. Pricing is decided later.                                                                                                                        |
-| Hosting        | Under $20/month, EU region, one process                                                                                                                                                           |
-| Models         | Provider-agnostic. Evals pick the model, including locally hosted ones.                                                                                                                           |
-| Trips          | A user has many trips. A trip may be open-ended, so a nomad can keep one rolling trip. Optional home base.                                                                                        |
-| Creating trips | Slice 1 reads a trip from a seed file. From slice 2, trips are created by chat, always through a "Create new trip?" confirmation; code suggests "add to an existing trip" when the dates overlap. |
-| Leave-by       | Defaults per event type plus your own overrides. Every answer states the assumptions it used.                                                                                                     |
-| Companions     | Trip members and roles are in the data model from the start; sharing comes later                                                                                                                  |
-| Beyond chat    | A standalone web app, later. The HTTP API arrives with it.                                                                                                                                        |
-| Language       | English only, with no user-facing text hardcoded, so other languages can be added later                                                                                                           |
+| Topic          | Decision                                                                                                                                                                                                                                                                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First users    | Just the author, through an allowlisted Telegram account                                                                                                                                                                                                                                                   |
+| LLM costs      | The author pays, with a hard daily cap per user. Pricing is decided later.                                                                                                                                                                                                                                 |
+| Hosting        | Under $20/month, EU region, one process                                                                                                                                                                                                                                                                    |
+| Models         | Provider-agnostic. Evals pick the model, including locally hosted ones.                                                                                                                                                                                                                                    |
+| Trips          | A user has many trips. A trip may be open-ended, so a nomad can keep one rolling trip. Optional home base.                                                                                                                                                                                                 |
+| Creating trips | Slice 1 reads a trip from a seed file. From slice 2, trips are created by chat, always through a "Create new trip?" confirmation; code suggests "add to an existing trip" when the dates overlap.                                                                                                          |
+| Leave-by       | Defaults per event type plus your own overrides. Every answer states the assumptions it used.                                                                                                                                                                                                              |
+| Companions     | Trip members and roles are in the data model from the start; sharing comes later                                                                                                                                                                                                                           |
+| Beyond chat    | A standalone app, later; the HTTP API arrives with it. Web or mobile first is decided then, and mobile has the edge: it knows the device's timezone passively, without a permission prompt, and can use background location for travel times. A web page sees the browser's timezone only while it's open. |
+| Language       | English only, with no user-facing text hardcoded, so other languages can be added later                                                                                                                                                                                                                    |
 
 ## Assumed defaults (change any of them)
 
@@ -44,6 +44,7 @@ A travel agent you talk to in chat. It takes a loose idea ("Asia this summer", "
 - **Proactive messages:** none until the reminders slice. Then quiet hours 22:00–08:00 your local time, unless a departure is imminent.
 - **Personalization:** store only what you said explicitly, show "what I know about you" with edit and delete, never store sensitive inferences.
 - **Booking:** affiliate links only, hotels first. No payments.
+- **Location:** only the derived timezone, the city name, the source ("shared location", "you said") and the time it was set are stored. Raw coordinates and location history are never stored.
 
 ## Not doing now
 

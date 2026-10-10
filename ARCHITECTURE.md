@@ -44,7 +44,7 @@ block-beta
     clk["System clock"]
   end
   tg --> agent
-  tg -. "identity, buttons" .-> core
+  tg -. "identity, location, buttons" .-> core
   api -- "services port" --> core
   agent -- "services port" --> core
   agent -- "LLM port" --> llm
@@ -58,7 +58,7 @@ block-beta
 - **Application:** all the logic and no technology. The core holds the business rules; the agent holds the conversation loop.
 - **Driving adapters** call the application.
   - Telegram messages go to the agent.
-  - Things that need no language understanding go straight to the core: identifying the user, and button taps such as **Confirm**.
+  - Things that need no language understanding go straight to the core: identifying the user, shared locations, and button taps such as **Confirm**.
   - A future HTTP API calls the core's services directly, with no LLM involved.
 - **Driven adapters** implement the application's outbound **ports**, which are interfaces for what the application needs. The core defines the Clock and the repositories; the agent defines the LLM port. Tests replace these adapters with fakes.
 
@@ -96,7 +96,10 @@ sequenceDiagram
   U->>T: When do I need to leave for my flight?
   T->>B: webhook (HTTP POST)
   B->>A: message from user
-  A->>C: build context preamble (clock, timezone, active trip)
+  A->>C: get context for the preamble
+  C->>D: read user's timezone and active trip
+  D-->>C: timezone (with source), trip
+  C-->>A: now (UTC from the Clock), timezone, local time, active trip
   A->>L: conversation, preamble and tool definitions
   L-->>A: tool call: next event
   A->>C: query next event
