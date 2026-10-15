@@ -21,15 +21,15 @@ The tooling and guardrails are in place. There's no product code yet.
 
 The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 
-| Step                                                                                     | Status    |
-| ---------------------------------------------------------------------------------------- | --------- |
-| Tooling: monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI | Done      |
-| [Product](docs/product.md) and [roadmap](docs/roadmap.md)                                | In review |
-| Slice 1: answer time questions about a trip                                              | Next      |
-| Slice 2: change the plan, with preview, confirm and undo                                 | Planned   |
-| Slice 3: turn a loose idea into a draft trip                                             | Planned   |
-| Slice 4: personalization                                                                 | Planned   |
-| Slice 5: affiliate booking links                                                         | Planned   |
+| Step                                                                                     | Status      |
+| ---------------------------------------------------------------------------------------- | ----------- |
+| Tooling: monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI | Done        |
+| [Product](docs/product.md) and [roadmap](docs/roadmap.md)                                | Done        |
+| Slice 1: answer time questions about a trip ([spec](docs/slices/01-time-questions.md))   | In progress |
+| Slice 2: change the plan, with preview, confirm and undo                                 | Planned     |
+| Slice 3: turn a loose idea into a draft trip                                             | Planned     |
+| Slice 4: personalization                                                                 | Planned     |
+| Slice 5: affiliate booking links                                                         | Planned     |
 
 ## Repository layout
 

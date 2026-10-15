@@ -14,7 +14,7 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
   2. Build it test-first in small steps: a failing test, then the code. Show each new test failing first.
   3. The user tries it, then the next slice begins.
 - **Explain as you go.** The user is learning AI engineering. Explain new concepts in plain web-backend terms, add them to the glossary, and explain every new file in the same message that adds it.
-- **Current step:** the product doc and roadmap are in review. Next: the slice 1 spec.
+- **Current step:** building slice 1, following the build order in its spec ([docs/slices/01-time-questions.md](docs/slices/01-time-questions.md)).
 
 ## Principles
 

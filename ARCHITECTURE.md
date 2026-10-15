@@ -94,7 +94,8 @@ sequenceDiagram
   participant D as Database
 
   U->>T: When do I need to leave for my flight?
-  T->>B: webhook (HTTP POST)
+  B->>T: any new messages? (long polling)
+  T-->>B: new message
   B->>A: message from user
   A->>C: get context for the preamble
   C->>D: read user's timezone and active trip

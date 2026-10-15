@@ -20,7 +20,12 @@ The core never imports an adapter, so technologies can be swapped, new clients c
 
 **Content blocks.** Structured, channel-neutral output (text, itinerary card, diff, confirmation prompt) instead of preformatted strings. Each channel adapter renders them within its own capabilities.
 
-**Webhook.** An HTTP request another service sends _to us_ when something happens. Telegram POSTs every new message to our webhook URL, the same way Stripe or GitHub webhooks work.
+**Webhook vs long polling.** Two ways of hearing about new messages:
+
+- With a _webhook_, the other service sends an HTTP request _to us_ whenever something happens, the way Stripe or GitHub webhooks work. That needs a public HTTPS address.
+- With _long polling_, we call the service and ask "anything new?". The service holds the request open until a message arrives or a timeout passes, then we ask again.
+
+We use long polling for Telegram: no public address is needed, and it works the same on a laptop and on a server.
 
 **Slice (vertical slice).** A small but complete version of the app that a user can actually use. The next slice adds one capability on top. Think skateboard → scooter → bicycle → car: every step gets you somewhere. The opposite, wheel → axle → body → car, is useless until the end. Each slice builds a little of every layer (Telegram → agent → core → database). See [docs/roadmap.md](../roadmap.md).
 
@@ -53,7 +58,7 @@ The model is a planner that issues RPC requests; our server executes them, so ou
 2. If the model asked for tools, run them, append the results, and go back to step 1.
 3. Otherwise, return the answer.
 
-That loop is all an "agent" is. It runs inside our webhook handler.
+That loop is all an "agent" is. It runs inside our process each time a new message arrives.
 
 **Server tools.** Tools that run on the model provider's side, such as hosted web search. They're convenient, but provider-specific. We prefer our own tools, so that we can switch models.
 
