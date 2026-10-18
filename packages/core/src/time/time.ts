@@ -4,26 +4,13 @@ import { Temporal } from "temporal-polyfill";
 export interface WallTime {
   readonly local: string;
   readonly zone: string;
-  /** Only for times that happen twice; picks which occurrence is meant. */
-  readonly offset?: string;
 }
 
 export type TimeError =
   | { readonly kind: "invalid_zone"; readonly zone: string }
   | { readonly kind: "invalid_local_time"; readonly local: string }
   | { readonly kind: "nonexistent"; readonly local: string; readonly zone: string }
-  | {
-      readonly kind: "ambiguous";
-      readonly local: string;
-      readonly zone: string;
-      readonly offsets: readonly [string, string];
-    }
-  | {
-      readonly kind: "offset_mismatch";
-      readonly local: string;
-      readonly zone: string;
-      readonly offset: string;
-    };
+  | { readonly kind: "ambiguous"; readonly local: string; readonly zone: string };
 
 export type Result<T, E> =
   { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
@@ -51,38 +38,16 @@ export function toZoned(time: WallTime): Result<Temporal.ZonedDateTime, TimeErro
     timeZone: time.zone,
   };
 
-  if (time.offset !== undefined) {
-    try {
-      return ok(
-        Temporal.ZonedDateTime.from(
-          { ...fields, offset: time.offset },
-          { offset: "reject", disambiguation: "reject" },
-        ),
-      );
-    } catch {
-      return fail({
-        kind: "offset_mismatch",
-        local: time.local,
-        zone: time.zone,
-        offset: time.offset,
-      });
-    }
-  }
-
   const earlier = Temporal.ZonedDateTime.from(fields, { disambiguation: "earlier" });
   const later = Temporal.ZonedDateTime.from(fields, { disambiguation: "later" });
   if (earlier.equals(later)) return ok(earlier);
 
   // Both candidates keep the requested wall time only when it happens twice.
-  if (Temporal.PlainDateTime.compare(earlier.toPlainDateTime(), local) === 0) {
-    return fail({
-      kind: "ambiguous",
-      local: time.local,
-      zone: time.zone,
-      offsets: [earlier.offset, later.offset],
-    });
-  }
-  return fail({ kind: "nonexistent", local: time.local, zone: time.zone });
+  const kind =
+    Temporal.PlainDateTime.compare(earlier.toPlainDateTime(), local) === 0
+      ? "ambiguous"
+      : "nonexistent";
+  return fail({ kind, local: time.local, zone: time.zone });
 }
 
 export function zonedAt(

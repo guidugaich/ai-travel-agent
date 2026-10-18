@@ -22,6 +22,8 @@ Experiment, run on 2026-10-11, using 01:30 in `Europe/Lisbon` on 2027-03-28 (doe
 
 Option 1. The core uses Temporal's types (`PlainDateTime` for wall times, `ZonedDateTime`, `Instant`, `Duration`) and always converts wall times with `disambiguation: "reject"`. An ambiguous time is accepted only when an explicit offset says which occurrence is meant.
 
+_Update 2026-10-18:_ explicit offsets were dropped for simplicity. Times that happen twice are refused, like times that don't exist. Offset support can come back if a real event ever needs it.
+
 ## Consequences
 
 - "Ask, don't guess" is enforced by the library, not by convention.

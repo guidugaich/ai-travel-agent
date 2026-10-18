@@ -22,29 +22,11 @@ describe("toZoned: wall time + zone → an exact moment", () => {
     });
   });
 
-  test("a time that happens twice (clocks fall back) is refused, listing both offsets", () => {
+  test("a time that happens twice (clocks fall back) is refused", () => {
     expect(toZoned({ local: "2026-10-25T01:30", zone: "Europe/Lisbon" })).toEqual({
       ok: false,
-      error: {
-        kind: "ambiguous",
-        local: "2026-10-25T01:30",
-        zone: "Europe/Lisbon",
-        offsets: ["+01:00", "+00:00"],
-      },
+      error: { kind: "ambiguous", local: "2026-10-25T01:30", zone: "Europe/Lisbon" },
     });
-  });
-
-  test("an explicit offset picks one of the two occurrences", () => {
-    const first = { local: "2026-10-25T01:30", zone: "Europe/Lisbon", offset: "+01:00" };
-    const second = { local: "2026-10-25T01:30", zone: "Europe/Lisbon", offset: "+00:00" };
-    expect(instantOf(first).toString()).toBe("2026-10-25T00:30:00Z");
-    expect(instantOf(second).toString()).toBe("2026-10-25T01:30:00Z");
-  });
-
-  test("an offset that doesn't match the zone is refused", () => {
-    expect(
-      toZoned({ local: "2026-10-25T01:30", zone: "Europe/Lisbon", offset: "+05:00" }),
-    ).toMatchObject({ ok: false, error: { kind: "offset_mismatch" } });
   });
 
   test("an unknown zone is refused", () => {

@@ -39,7 +39,7 @@ We store future events as wall time plus zone, because that's what tickets say, 
 
 In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with its zone, and `Instant` is the exact moment.
 
-**Times that don't exist or happen twice.** When clocks spring forward (01:00 → 02:00), the wall time 01:30 never happens that night. When they fall back (02:00 → 01:00), 01:30 happens twice. We refuse such times instead of guessing. For a time that happens twice, an explicit offset (`+01:00` or `+00:00`) says which occurrence is meant.
+**Times that don't exist or happen twice.** When clocks spring forward (01:00 → 02:00), the wall time 01:30 never happens that night. When they fall back (02:00 → 01:00), 01:30 happens twice. We refuse such times instead of guessing, and the error says why. These are rare: they only happen in the one hour of a clock change.
 
 ## AI engineering
 
