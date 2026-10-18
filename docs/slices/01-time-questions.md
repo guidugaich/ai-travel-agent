@@ -54,22 +54,22 @@ A model's wording varies from run to run, so replies are checked for their value
 
 ### Time edge cases (unit tests on the core)
 
-| Case                                                           | Input                                               | Expected                                                                                    |
-| -------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Nonexistent time (clocks spring forward)                       | 2027-03-28 01:30 `Europe/Lisbon`                    | Seed loader rejects it, naming the event                                                    |
-| Ambiguous time (clocks fall back)                              | 2026-10-25 01:30 `Europe/Lisbon`                    | Rejected unless the event gives an offset: `+01:00` (first occurrence) or `+00:00` (second) |
-| Duration across fall-back                                      | Sat 24 Oct 12:00 → Sun 25 Oct 12:00 `Europe/Lisbon` | 25 h, displayed as "1 day, 1 h" (not 24 h)                                                  |
-| Overnight flight in the week Europe and the US are out of sync | JFK Mon 26 Oct 18:30 → LIS Tue 27 Oct 06:15         | 7 h 45 min                                                                                  |
-| Date line, westbound                                           | NRT Mon 2 Nov 21:00 → HNL Mon 2 Nov 09:00           | 7 h (arrival's local time is earlier than departure's)                                      |
-| Date line, eastbound                                           | HNL Tue 3 Nov 13:00 → NRT Wed 4 Nov 17:30           | 9 h 30 min                                                                                  |
-| Offsets of 30 and 45 minutes                                   | `2026-10-13T09:12:00Z`                              | Kolkata 14:42, Kathmandu 14:57, Eucla 17:57, Chatham 22:57                                  |
-| A zone whose rules changed (Mexico dropped DST in 2022)        | 2027-04-10 12:00 `America/Mexico_City`              | UTC−06:00, so `18:00Z`                                                                      |
-| "Tomorrow" late in the evening                                 | 23:59 Tue 13 Oct, Lisbon                            | Wed 14 Oct, no question                                                                     |
-| "Tomorrow" just after midnight                                 | 00:30 Wed 14 Oct, Lisbon                            | Ambiguous: offer Wed 14 Oct and Thu 15 Oct                                                  |
+| Case                                                           | Input                                               | Expected                                                                    |
+| -------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Nonexistent time (clocks spring forward)                       | 2027-03-28 01:30 `Europe/Lisbon`                    | Seed loader rejects it, naming the event                                    |
+| Ambiguous time (clocks fall back)                              | 2026-10-25 01:30 `Europe/Lisbon`                    | Seed loader rejects it, naming the event: the time happens twice that night |
+| Duration across fall-back                                      | Sat 24 Oct 12:00 → Sun 25 Oct 12:00 `Europe/Lisbon` | 25 h, displayed as "1 day, 1 h" (not 24 h)                                  |
+| Overnight flight in the week Europe and the US are out of sync | JFK Mon 26 Oct 18:30 → LIS Tue 27 Oct 06:15         | 7 h 45 min                                                                  |
+| Date line, westbound                                           | NRT Mon 2 Nov 21:00 → HNL Mon 2 Nov 09:00           | 7 h (arrival's local time is earlier than departure's)                      |
+| Date line, eastbound                                           | HNL Tue 3 Nov 13:00 → NRT Wed 4 Nov 17:30           | 9 h 30 min                                                                  |
+| Offsets of 30 and 45 minutes                                   | `2026-10-13T09:12:00Z`                              | Kolkata 14:42, Kathmandu 14:57, Eucla 17:57, Chatham 22:57                  |
+| A zone whose rules changed (Mexico dropped DST in 2022)        | 2027-04-10 12:00 `America/Mexico_City`              | UTC−06:00, so `18:00Z`                                                      |
+| "Tomorrow" late in the evening                                 | 23:59 Tue 13 Oct, Lisbon                            | Wed 14 Oct, no question                                                     |
+| "Tomorrow" just after midnight                                 | 00:30 Wed 14 Oct, Lisbon                            | Ambiguous: offer Wed 14 Oct and Thu 15 Oct                                  |
 
 ## Time rules
 
-**Storage.** An event's time is stored as local wall time plus an IANA zone (`2026-10-14T17:05` + `Europe/Lisbon`), which is what the ticket says. If a time occurs twice (when clocks fall back), the offset is stored as well. Instants, durations and "time until" are computed when needed, never stored.
+**Storage.** An event's time is stored as local wall time plus an IANA zone (`2026-10-14T17:05` + `Europe/Lisbon`), which is what the ticket says. Times that don't exist or happen twice (in the hour when clocks change) are refused, with an error naming the event. Instants, durations and "time until" are computed when needed, never stored.
 
 **Your current timezone, decided in code:**
 
@@ -135,7 +135,7 @@ Everything below is stored in Postgres as ordinary tables, one row per trip, eve
 - **User:** id, Telegram id, travel-time settings (`airport`, `other` in minutes).
 - **Location state:** user, zone, place name, source (`shared_location`, `user_said`), when it was set. Only the latest is kept.
 - **Trip:** id, user, title, start date, optional end date, members (just the owner for now).
-- **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone (with an offset only when ambiguous), optional `transit_minutes`. Flights also have from/to airport codes and `international`.
+- **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone, optional `transit_minutes`. Flights also have from/to airport codes and `international`.
 - **Conversation:** the last 20 messages per user. Older ones are deleted.
 - **Usage:** tokens used per user per day, for the cap.
 
@@ -203,7 +203,7 @@ D1 is costly to reverse, so it also has [ADR 0004](../adr/0004-temporal-for-time
 
 Each step ends with tests passing, and something you can see.
 
-1. **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
+1. ✅ **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
 2. **Domain and seed:** zod schemas, the seed loader (rejecting bad times), core services, timezone resolution, in-memory repositories. Done when examples 1–10 pass at the core level.
 3. **Storage:** Postgres adapters for trips, location state, conversations and usage, tested on PGlite; schema migrations; the `pnpm seed` import.
 4. **The agent loop:** the LLM port, the tools, the preamble, the output check, all tested with a scripted fake model. Done when the conversation tests for examples 1–10 pass.
