@@ -7,7 +7,7 @@
 In Telegram, with a trip loaded from a seed file:
 
 - Ask "what time is it?" or "what time is it in Kathmandu?"
-- Tap **Share my location**, or say "I'm in Lisbon", and the bot uses that timezone.
+- Tap **Share my location** (the most reliable way), or say where you are ("I'm in Lisbon"). What you say only counts when you haven't shared a location in the last 3 days, or your trip has moved you since.
 - Ask "when is my next event?" or "what's on tomorrow?"
 - Ask "when do I need to leave for it?" and get a time with its assumptions.
 
@@ -27,22 +27,23 @@ These are the acceptance tests. Every value was computed with the time library c
 **Default setup.** Unless an example says otherwise:
 
 - **Now:** `2026-10-13T09:12:00Z` (Tue 13 Oct, 10:12 in Lisbon).
-- **Your location:** you said "I'm in Lisbon" on 12 Oct.
+- **Your location:** you shared your location in Lisbon on 12 Oct.
 - **Your settings:** 30 min to the airport.
-- **Your trip, "US East Coast":** flight LIS → JFK, departing Wed 14 Oct 17:05 `Europe/Lisbon` and arriving 19:40 `America/New_York`, marked international. Only examples 3, 4, 6, 8, 9 and 10 use a trip. Examples 1, 2, 5 and 7 need only the clock and your location.
+- **Your trip, "US East Coast":** flight LIS → JFK, departing Wed 14 Oct 17:05 `Europe/Lisbon` and arriving 19:40 `America/New_York`, marked international. Only examples 3, 4, 6, 8, 9 and 10 use a trip. Examples 1, 2, 5, 7 and 11 need only the clock and your location.
 
-| #   | You say                                                                                                                  | The bot must                                             | Values the reply must contain                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 1   | What time is it?                                                                                                         | Answer from the preamble                                 | 10:12, Lisbon                                                                                   |
-| 2   | What time is it in Kathmandu?                                                                                            | Call `time_in_zone` with `Asia/Kathmandu`                | 14:57                                                                                           |
-| 3   | When is my next event?                                                                                                   | Call `get_next_event`                                    | tomorrow (Wed 14 Oct), 17:05 Lisbon time, 19:40 New York time, 7 h 35 min, in 1 day, 6 h 53 min |
-| 4   | When do I need to leave for it?                                                                                          | Call `compute_leave_by`                                  | 13:35, in 1 day, 3 h 23 min, 30 min to the airport, 3 h before an international flight          |
-| 5   | I'm in Kathmandu now                                                                                                     | Call `set_my_location` with `Asia/Kathmandu` and confirm | Kathmandu, 14:57                                                                                |
-| 6   | What's on tomorrow? _(now: 00:30 Wed 14 Oct in Lisbon, `2026-10-13T23:30:00Z`)_                                          | Ask which day you mean; don't answer                     | Wed 14 Oct, Thu 15 Oct                                                                          |
-| 7   | What time is it? _(nothing known about your location)_                                                                   | Ask where you are and point to the share button          | (no time)                                                                                       |
-| 8   | What time is it? _(now `2026-10-15T14:00:00Z`; your flight landed in New York after you said "Lisbon")_                  | Use New York from the trip, and say so                   | 10:00, New York, based on your trip                                                             |
-| 9   | What time is it? _(now `2026-10-14T20:00:00Z`, mid-flight)_                                                              | Say you're in flight and give both times                 | 21:00 Lisbon, 16:00 New York                                                                    |
-| 10  | When does my flight land? _(trip: NRT → HNL, departing Mon 2 Nov 21:00 `Asia/Tokyo`, arriving 09:00 `Pacific/Honolulu`)_ | Call `get_next_event`                                    | Mon 2 Nov, 09:00 Honolulu time, 7 h                                                             |
+| #   | You say                                                                                                                  | The bot must                                                                                             | Values the reply must contain                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | What time is it?                                                                                                         | Answer from the preamble                                                                                 | 10:12, Lisbon                                                                                   |
+| 2   | What time is it in Kathmandu?                                                                                            | Call `time_in_zone` with `Asia/Kathmandu`                                                                | 14:57                                                                                           |
+| 3   | When is my next event?                                                                                                   | Call `get_next_event`                                                                                    | tomorrow (Wed 14 Oct), 17:05 Lisbon time, 19:40 New York time, 7 h 35 min, in 1 day, 6 h 53 min |
+| 4   | When do I need to leave for it?                                                                                          | Call `compute_leave_by`                                                                                  | 13:35, in 1 day, 3 h 23 min, 30 min to the airport, 3 h before an international flight          |
+| 5   | I'm in Kathmandu now                                                                                                     | Call `set_my_location`; keep Lisbon, because you shared it in the last 3 days, and suggest sharing again | Lisbon, Share my location                                                                       |
+| 6   | What's on tomorrow? _(now: 00:30 Wed 14 Oct in Lisbon, `2026-10-13T23:30:00Z`)_                                          | Ask which day you mean; don't answer                                                                     | Wed 14 Oct, Thu 15 Oct                                                                          |
+| 7   | What time is it? _(nothing known about your location)_                                                                   | Ask where you are and point to the share button                                                          | (no time)                                                                                       |
+| 8   | What time is it? _(now `2026-10-15T14:00:00Z`; your flight landed in New York after you shared Lisbon)_                  | Use New York from the trip, and say so                                                                   | 10:00, New York, based on your trip                                                             |
+| 9   | What time is it? _(now `2026-10-14T20:00:00Z`, mid-flight)_                                                              | Say you're in flight and give both times                                                                 | 21:00 Lisbon, 16:00 New York                                                                    |
+| 10  | When does my flight land? _(trip: NRT → HNL, departing Mon 2 Nov 21:00 `Asia/Tokyo`, arriving 09:00 `Pacific/Honolulu`)_ | Call `get_next_event`                                                                                    | Mon 2 Nov, 09:00 Honolulu time, 7 h                                                             |
+| 11  | I'm in Kathmandu now _(no shared location in the last 3 days)_                                                           | Call `set_my_location` with `Asia/Kathmandu` and confirm                                                 | Kathmandu, 14:57, based on what you said                                                        |
 
 Each example is checked three ways:
 
@@ -73,12 +74,10 @@ A model's wording varies from run to run, so replies are checked for their value
 
 **Your current timezone, decided in code:**
 
-1. Start from the most recent thing _you_ confirmed: a shared location, or a statement like "I'm in Lisbon". That's _high_ confidence.
-2. If your trip moved you since then (a flight landed in another zone after you confirmed), use the trip's zone. That's _medium_ confidence, and the reply says "based on your trip".
-3. If you haven't confirmed anything, use the trip if it covers now (a stay, or after an arrival). Also _medium_.
-4. Between a flight's departure and its arrival, you're _in flight_: answer with both local times.
-5. Otherwise the timezone is _unknown_: ask, and point to the share button.
-6. A confirmation older than 7 days drops to _medium_, and the reply mentions its age.
+1. **A shared location from the last 3 days wins** (_high_ confidence), unless your trip moved you after you shared it (for example, a flight landed in another zone). While it holds, what you _say_ ("I'm in Madrid") doesn't change your location; the bot suggests sharing again if you've moved.
+2. **Otherwise, the newest evidence wins** (_medium_ confidence). It can be an older shared location, something you said ("I'm in Lisbon"), or your trip (an arrival, or a stay covering now). The reply says which one it used: "based on what you said", "based on your trip".
+3. **Between a flight's departure and its arrival,** if that's the newest evidence, you're _in flight_: answer with both local times.
+4. **Otherwise the timezone is _unknown_:** ask, and point to the share button.
 
 **Ambiguity, where the bot asks instead of guessing:**
 
@@ -113,13 +112,13 @@ Travel time comes from, in order: the event's own `transit_minutes`, then your s
 
 Each tool is a thin wrapper over one core function. Inputs are validated with zod. Results include ready-to-say `display` strings, so the model only ever repeats values.
 
-| Tool               | Input                                                 | Returns                                                                              |
-| ------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `time_in_zone`     | `zone`, a valid IANA name                             | Local time, date and city in that zone                                               |
-| `set_my_location`  | `zone`, `place_name`                                  | Your stored location, plus its local time now (so you can spot a wrong zone)         |
-| `get_next_event`   | (none)                                                | The next event: start and end in their own zones, duration, relative day, time until |
-| `events_on_day`    | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD` | That day's events, _or_ `ambiguous` with options to offer you                        |
-| `compute_leave_by` | `event_id`, optional `transit_minutes`                | The leave time, time until then, and the assumptions; _or_ `need_transit_time`       |
+| Tool               | Input                                                 | Returns                                                                                                                           |
+| ------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `time_in_zone`     | `zone`, a valid IANA name                             | Local time, date and city in that zone                                                                                            |
+| `set_my_location`  | `zone`, `place_name`                                  | Stores what you said, and whether it's in effect (a shared location from the last 3 days takes priority), plus its local time now |
+| `get_next_event`   | (none)                                                | The next event: start and end in their own zones, duration, relative day, time until                                              |
+| `events_on_day`    | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD` | That day's events, _or_ `ambiguous` with options to offer you                                                                     |
+| `compute_leave_by` | `event_id`, optional `transit_minutes`                | The leave time, time until then, and the assumptions; _or_ `need_transit_time`                                                    |
 
 These don't go through the model at all; the Telegram adapter calls the core directly:
 
@@ -133,7 +132,7 @@ These don't go through the model at all; the Telegram adapter calls the core dir
 Everything below is stored in Postgres as ordinary tables, one row per trip, event and so on. JSON is used only for the seed file.
 
 - **User:** id, Telegram id, travel-time settings (`airport`, `other` in minutes).
-- **Location state:** user, zone, place name, source (`shared_location`, `user_said`), when it was set. Only the latest is kept.
+- **Location state:** user, source (`shared_location` or `user_said`), zone, place name, when. The latest of each source is kept.
 - **Trip:** id, user, title, start date, optional end date, members (just the owner for now).
 - **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone, optional `transit_minutes`. Flights also have from/to airport codes and `international`.
 - **Conversation:** the last 20 messages per user. Older ones are deleted.
@@ -192,7 +191,7 @@ Each one was checked on 2026-10-11 against the npm registry, the official docs, 
 | D3  | Telegram                   | **grammY 1.46, using long polling** (our process asks Telegram for new messages)                                                                                                      | TypeScript-first and actively maintained. Long polling needs no public URL or HTTPS certificate, and works the same on your laptop and on a server.                                                             | Webhooks: need a public HTTPS endpoint; can switch later without touching the core                                                           |
 | D4  | Calling LLMs               | **Our `LlmClient` port, plus one adapter for the "OpenAI-compatible chat completions" format, using plain `fetch`**                                                                   | One adapter reaches local models through Ollama and hosted models through gateways or providers' own compatible endpoints. Plain `fetch` lets you see exactly what's sent. To verify with real calls at step 6. | A provider SDK or a multi-provider library: hides the HTTP you're learning about                                                             |
 | D5  | Coordinates → timezone     | **`geo-tz` 8.1** in the Telegram app, behind a port                                                                                                                                   | Accurate. 74 MB, which is fine on a server, and it stays out of the core.                                                                                                                                       | `@photostructure/tz-lookup`: 88 KB, but its README says about 30% of random points don't match the accurate result                           |
-| D6  | "I'm in Lisbon" → timezone | **The model proposes an IANA zone, code checks it's real, and the reply echoes the zone and its local time**                                                                          | Simple. A wrong guess is visible right away ("Lisbon, 10:12 now").                                                                                                                                              | A city database: add it if evals show mistakes                                                                                               |
+| D6  | "I'm in Lisbon" → timezone | **The model proposes an IANA zone, code checks it's real, and the reply echoes the zone and its local time**                                                                          | Simple. A wrong guess is visible right away ("Lisbon, 10:12 now"). And a shared location from the last 3 days always takes priority.                                                                            | A city database: add it if evals show mistakes                                                                                               |
 | D7  | Seed format                | **JSON, validated with zod**                                                                                                                                                          | No extra dependency                                                                                                                                                                                             | YAML: friendlier to write, but adds a dependency                                                                                             |
 | D8  | Hosting                    | **Decided at step 7**, with a fresh price check                                                                                                                                       | Prices change. The constraints: EU, under $20/month, an always-on app process, and a managed Postgres with backups.                                                                                             | —                                                                                                                                            |
 | D9  | Models                     | **Chosen at step 6 by the eval scorecard:** 2–3 hosted models, plus 2 local models that fit in 36 GB                                                                                  | Data, not opinion                                                                                                                                                                                               | —                                                                                                                                            |
@@ -204,9 +203,9 @@ D1 is costly to reverse, so it also has [ADR 0004](../adr/0004-temporal-for-time
 Each step ends with tests passing, and something you can see.
 
 1. ✅ **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
-2. **Domain and seed:** zod schemas, the seed loader (rejecting bad times), core services, timezone resolution, in-memory repositories. Done when examples 1–10 pass at the core level.
+2. **Domain and seed:** zod schemas, the seed loader (rejecting bad times), core services, timezone resolution, in-memory repositories. Done when examples 1–11 pass at the core level.
 3. **Storage:** Postgres adapters for trips, location state, conversations and usage, tested on PGlite; schema migrations; the `pnpm seed` import.
-4. **The agent loop:** the LLM port, the tools, the preamble, the output check, all tested with a scripted fake model. Done when the conversation tests for examples 1–10 pass.
+4. **The agent loop:** the LLM port, the tools, the preamble, the output check, all tested with a scripted fake model. Done when the conversation tests for examples 1–11 pass.
 5. **Telegram:** grammY with long polling, the share button, the allowlist. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
 6. **Real models:** the OpenAI-compatible adapter, and `pnpm eval` producing a scorecard (pass rate, latency, cost per conversation) for the candidates. You pick the model.
 7. **Deploy:** choose a host (D8), set up backups, and turn on the daily cap. Done when the bot runs while your laptop is off.

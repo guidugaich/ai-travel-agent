@@ -7,7 +7,7 @@ const instant = (iso: string) => Temporal.Instant.from(iso);
 // Wed 14 Oct 2026, 17:05 in Lisbon.
 const flightToNewYork: LeaveByEvent = {
   kind: "flight",
-  international: true,
+  flight: { international: true },
   start: instant("2026-10-14T16:05:00Z"),
 };
 
@@ -39,8 +39,8 @@ describe("bufferMinutes: how early to be there", () => {
   const start = instant("2026-10-14T16:05:00Z");
 
   test.each<[LeaveByEvent, number]>([
-    [{ kind: "flight", international: true, start }, 180],
-    [{ kind: "flight", international: false, start }, 120],
+    [{ kind: "flight", flight: { international: true }, start }, 180],
+    [{ kind: "flight", flight: { international: false }, start }, 120],
     [{ kind: "ferry", start }, 45],
     [{ kind: "train", start }, 20],
     [{ kind: "bus", start }, 15],

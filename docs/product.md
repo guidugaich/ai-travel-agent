@@ -44,7 +44,7 @@ A travel agent you talk to in chat. It takes a loose idea ("Asia this summer", "
 - **Proactive messages:** none until the reminders slice. Then quiet hours 22:00–08:00 your local time, unless a departure is imminent.
 - **Personalization:** store only what you said explicitly, show "what I know about you" with edit and delete, never store sensitive inferences.
 - **Booking:** affiliate links only, hotels first. No payments.
-- **Location:** only the derived timezone, the city name, the source ("shared location", "you said") and the time it was set are stored. Raw coordinates and location history are never stored.
+- **Location:** only the derived timezone, the city name, the source (a shared location or something you said) and when are stored. Raw coordinates and location history are never stored.
 
 ## Not doing now
 

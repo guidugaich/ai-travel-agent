@@ -1,11 +1,13 @@
 import type { Temporal } from "temporal-polyfill";
+import type { EventKind } from "../domain.js";
 import { elapsed } from "./time.js";
 
-export type EventKind = "flight" | "train" | "bus" | "ferry" | "stay" | "activity" | "call";
-
-export type LeaveByEvent =
-  | { readonly kind: "flight"; readonly international: boolean; readonly start: Temporal.Instant }
-  | { readonly kind: Exclude<EventKind, "flight">; readonly start: Temporal.Instant };
+/** What leave-by needs: the kind, the start, and whether a flight is international. */
+export interface LeaveByEvent {
+  readonly kind: EventKind;
+  readonly start: Temporal.Instant;
+  readonly flight?: { readonly international: boolean };
+}
 
 export interface LeavePlan {
   readonly leaveAt: Temporal.Instant;
@@ -20,7 +22,7 @@ export interface LeavePlan {
 export function bufferMinutes(event: LeaveByEvent): number {
   switch (event.kind) {
     case "flight":
-      return event.international ? 180 : 120;
+      return event.flight?.international === true ? 180 : 120;
     case "ferry":
       return 45;
     case "train":

@@ -7,7 +7,7 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 **After this slice you can, in Telegram:**
 
 - Ask "what time is it?" or "what time is it in Tokyo?" and get the right answer, with the timezone named.
-- Tap **Share my location**, or just say where you are ("I'm in Lisbon"), and the bot uses that timezone until you tell it otherwise. If you haven't told it, it uses where your trip says you should be, and says so. If it can't tell, it asks.
+- Tap **Share my location**, or say where you are ("I'm in Lisbon"). A location you shared in the last 3 days takes priority over what you say. If you haven't told it anything, it uses where your trip says you should be, and says so. If it can't tell, it asks.
 - Ask "when is my next event?" about a trip loaded from a seed file. The answer shows the event's local time, your local time, and how long until then.
 - Ask "when do I need to leave for it?" and get a time with its assumptions spelled out ("45 min to the airport + 3 h before an international flight").
 
