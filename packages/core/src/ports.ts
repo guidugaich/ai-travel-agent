@@ -6,6 +6,12 @@ export interface Clock {
   now(): Temporal.Instant;
 }
 
+/** What core services need from the outside world. */
+export interface Deps {
+  readonly clock: Clock;
+  readonly repo: Repository;
+}
+
 /** Storage, implemented by Postgres in the app and by an in-memory fake in tests. */
 export interface Repository {
   getUser(userId: UserId): Promise<User | null>;
