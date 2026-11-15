@@ -68,7 +68,9 @@ The model is a planner that issues RPC requests; our server executes them, so ou
 2. If the model asked for tools, run them, append the results, and go back to step 1.
 3. Otherwise, return the answer.
 
-That loop is all an "agent" is. It runs inside our process each time a new message arrives.
+That loop is all an "agent" is. It runs inside our process each time a new message arrives. Ours stops after 8 model calls, and reports an unknown tool or bad arguments back to the model as an error it can read and correct.
+
+**Scripted fake model.** A test stand-in for the LLM that returns pre-written replies in order and records what it was sent, like a fake HTTP server. Tests with it check our wiring: the right tool ran, its result went back, the output check caught a wrong time. They can't check the model's judgment, such as picking the right tool, because we wrote its choices. Evals do that, with a real model.
 
 **Server tools.** Tools that run on the model provider's side, such as hosted web search. They're convenient, but provider-specific. We prefer our own tools, so that we can switch models.
 

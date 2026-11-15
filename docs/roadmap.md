@@ -55,7 +55,7 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 
 ## Slice 4: Personalization
 
-**After this slice you can:** tell the agent your preferences once. It uses them in suggestions, and "what do you know about me?" shows them so you can edit or delete them.
+**After this slice you can:** tell the agent your preferences once. It uses them in suggestions, and "what do you know about me?" shows them so you can edit or delete them. A travel time you mention in chat ("45 minutes to the airport") can update your settings, instead of being forgotten after 20 messages.
 
 **Done when:** only preferences you stated are stored; viewing, editing and deleting them all work.
 

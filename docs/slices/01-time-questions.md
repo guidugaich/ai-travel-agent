@@ -135,8 +135,8 @@ Everything below is stored in Postgres as ordinary tables, one row per trip, eve
 - **Location state:** user, source (`shared_location` or `user_said`), zone, place name, when. The latest of each source is kept.
 - **Trip:** id, user, title, start date, optional end date, members (just the owner for now).
 - **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone, optional `transit_minutes`. Flights also have from/to airport codes and `international`.
-- **Conversation:** the last 20 messages per user. Older ones are deleted.
-- **Usage:** tokens used per user per day, for the cap.
+- **Conversation:** the last 20 messages per user, yours and the bot's. Tool calls and their results aren't kept: they hold values like "in 2 h" that go stale, so the model calls tools again each turn. Older messages are deleted. Anything worth keeping is saved through a core service, never left only in the chat.
+- **Usage:** tokens used per user per day, for the cap (step 7).
 
 **Seed file.** Until slice 2 lets you create trips by chat, this is how a trip gets into the database. You run `pnpm seed`, which:
 
@@ -186,7 +186,7 @@ Each step ends with tests passing, and something you can see.
 1. ✅ **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
 2. ✅ **Domain and core services:** the trip import (rejecting bad times), timezone resolution, the services, an in-memory repository for tests. Done when examples 1–11 pass at the core level.
 3. ✅ **Storage:** Postgres adapters for users, trips and location state, tested on PGlite; schema migrations; the `pnpm seed` import, with the seed file's zod schema.
-4. **The agent loop:** the LLM port, the tools, the preamble, the output check, and storage for conversations and token usage, all tested with a scripted fake model. Done when the conversation tests for examples 1–11 pass.
+4. **The agent loop:** the LLM port, the tools, the preamble, the output check, and conversation history, all tested with a scripted fake model. The LLM port reports token counts from the start. Done when the conversation tests for examples 1–11 pass.
 5. **Telegram:** grammY with long polling, the share button, the allowlist. A lock on `.data/`, because PGlite lets a second program open the same folder and silently loses its writes (tested on 0.5.16): with the bot running, `pnpm seed` must refuse. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
 6. **Real models:** the OpenAI-compatible adapter, and `pnpm eval` producing a scorecard (pass rate, latency, cost per conversation, data terms) for the candidates. You pick the model.
-7. **Deploy:** choose a host (D8), set up backups, and turn on the daily cap. Done when the bot runs while your laptop is off.
+7. **Deploy:** choose a host (D8), set up backups, and add the daily token cap with its usage counter. Done when the bot runs while your laptop is off.
