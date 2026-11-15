@@ -1,5 +1,13 @@
 import type { PGlite } from "@electric-sql/pglite";
-import type { EventKind, Location, Repository, Trip, TripEvent, User } from "@ai-travel-agent/core";
+import type {
+  EventKind,
+  Location,
+  Repository,
+  Trip,
+  TripEvent,
+  User,
+  UserId,
+} from "@ai-travel-agent/core";
 import { Temporal } from "temporal-polyfill";
 
 interface UserRow {
@@ -138,6 +146,23 @@ export function postgresRepository(db: PGlite): Repository {
       );
     },
   };
+}
+
+/** The user behind a Telegram account, created on first contact. The core never sees Telegram ids. */
+export async function telegramUserId(db: PGlite, telegramId: number): Promise<UserId> {
+  const found = await db.query<{ id: string }>("select id from users where telegram_id = $1", [
+    telegramId,
+  ]);
+  const existing = found.rows[0]?.id;
+  if (existing !== undefined) return existing;
+
+  const created = await db.query<{ id: string }>(
+    "insert into users (telegram_id) values ($1) returning id",
+    [telegramId],
+  );
+  const id = created.rows[0]?.id;
+  if (id === undefined) throw new Error("Inserting a user returned no id");
+  return id;
 }
 
 function toUser(row: UserRow): User {

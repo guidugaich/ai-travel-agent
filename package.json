@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "secrets:check": "secretlint \"**/*\""
+    "secrets:check": "secretlint \"**/*\"",
+    "seed": "node apps/telegram-bot/src/seed.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

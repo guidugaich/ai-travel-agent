@@ -140,37 +140,15 @@ Everything below is stored in Postgres as ordinary tables, one row per trip, eve
 
 **Seed file.** Until slice 2 lets you create trips by chat, this is how a trip gets into the database. You run `pnpm seed`, which:
 
-1. Reads `seed.json` and checks its shape with zod.
+1. Reads `seed.json` and checks its shape with zod. Unknown fields are refused, so a misspelt optional field can't be silently ignored.
 2. Calls the core's `importTrips` service. That's the same validation that trips created by chat will go through in slice 2, so the import is just another driving adapter.
-3. _Replaces_ your trips in the database, in one transaction: all or nothing. If any event is invalid, nothing changes and the error names the event.
+3. _Replaces_ your trips, in one transaction, then saves your travel-time settings. If any event is invalid, nothing changes and the error names the event, for example "event 'Flight LIS → JFK', start: 2027-03-28T01:30 doesn't exist in Europe/Lisbon (clocks jump forward)".
 
-Editing the file and running `pnpm seed` again brings the database back in line with it. The import runs only when you start it, never when the bot starts, and it's retired once slice 2 exists. The bot only ever reads the database, never the file. Tests don't use it either: each test builds its own made-up trip and sets a fake clock. `seed.json` holds your real Telegram id, so git ignores it. The committed `seed.example.json` has a made-up trip and a placeholder id: copy it to `seed.json` and edit your copy. The bot uses the real clock, so set the dates in the future before you run `pnpm seed`.
+Editing the file and running `pnpm seed` again brings the database back in line with it. The import runs only when you start it, never when the bot starts, and it's retired once slice 2 exists. The bot only ever reads the database, never the file. Tests don't read `seed.json`; each test builds its own made-up trip and sets a fake clock.
 
-The format is JSON, validated with zod when it's loaded, with clear errors such as "event 'Flight LIS → JFK': 2027-03-28T01:30 doesn't exist in Europe/Lisbon (clocks jump forward)". Example:
+`seed.json` holds your real Telegram id, so git ignores it. The committed [`seed.example.json`](../../seed.example.json) shows the format, which matches the core's trip types, and a test keeps it valid. Copy it to `seed.json` and edit your copy. The bot uses the real clock, so set the dates in the future before you run `pnpm seed`.
 
-```json
-{
-  "user": { "telegramId": 123456789, "transitMinutes": { "airport": 30, "other": 20 } },
-  "trips": [
-    {
-      "title": "US East Coast",
-      "start": "2026-10-14",
-      "end": "2026-10-28",
-      "events": [
-        {
-          "kind": "flight",
-          "title": "Flight LIS → JFK",
-          "from": "LIS",
-          "to": "JFK",
-          "international": true,
-          "start": { "local": "2026-10-14T17:05", "zone": "Europe/Lisbon" },
-          "end": { "local": "2026-10-14T19:40", "zone": "America/New_York" }
-        }
-      ]
-    }
-  ]
-}
-```
+**Opening the database.** Every program that opens it (`pnpm seed` now, the bot from step 5) first applies any migrations it hasn't run yet. Locally the database lives in `.data/`, which git ignores.
 
 ## Safety and cost
 
@@ -207,8 +185,8 @@ Each step ends with tests passing, and something you can see.
 
 1. ✅ **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
 2. ✅ **Domain and core services:** the trip import (rejecting bad times), timezone resolution, the services, an in-memory repository for tests. Done when examples 1–11 pass at the core level.
-3. **Storage:** Postgres adapters for users, trips and location state, tested on PGlite; schema migrations; the `pnpm seed` import, with the seed file's zod schema.
+3. ✅ **Storage:** Postgres adapters for users, trips and location state, tested on PGlite; schema migrations; the `pnpm seed` import, with the seed file's zod schema.
 4. **The agent loop:** the LLM port, the tools, the preamble, the output check, and storage for conversations and token usage, all tested with a scripted fake model. Done when the conversation tests for examples 1–11 pass.
-5. **Telegram:** grammY with long polling, the share button, the allowlist. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
+5. **Telegram:** grammY with long polling, the share button, the allowlist. A lock on `.data/`, because PGlite lets a second program open the same folder and silently loses its writes (tested on 0.5.16): with the bot running, `pnpm seed` must refuse. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
 6. **Real models:** the OpenAI-compatible adapter, and `pnpm eval` producing a scorecard (pass rate, latency, cost per conversation, data terms) for the candidates. You pick the model.
 7. **Deploy:** choose a host (D8), set up backups, and turn on the daily cap. Done when the bot runs while your laptop is off.

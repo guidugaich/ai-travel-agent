@@ -2,6 +2,7 @@
 
 create table users (
   id uuid primary key default gen_random_uuid(),
+  telegram_id bigint unique check (telegram_id > 0),
   transit_airport_minutes integer check (transit_airport_minutes >= 0),
   transit_other_minutes integer check (transit_other_minutes >= 0)
 );
