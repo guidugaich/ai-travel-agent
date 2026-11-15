@@ -3,7 +3,7 @@ import type { Location, Trip, UserId } from "./domain.js";
 import type { Deps } from "./ports.js";
 import { cityName, formatClock, formatDate } from "./time/format.js";
 import { zonedAt, type Result, type TimeError } from "./time/time.js";
-import { resolveWhereabouts, type Whereabouts } from "./whereabouts.js";
+import { resolveWhereabouts, userToday, type Whereabouts } from "./whereabouts.js";
 
 /** A zone's current local time, ready to say. */
 export interface PlaceTime {
@@ -48,7 +48,7 @@ export async function currentContext(userId: UserId, deps: Deps): Promise<Contex
   return {
     now: now.toString(),
     whereabouts: describe(whereabouts, now),
-    activeTrip: activeTrip(trips, localDate(whereabouts, now)),
+    activeTrip: activeTrip(trips, userToday(whereabouts, now)),
   };
 }
 
@@ -86,7 +86,8 @@ export async function setLocation(
   return { ok: true, value: { inEffect, current: describe(whereabouts, now) } };
 }
 
-async function locate(userId: UserId, now: Temporal.Instant, deps: Deps) {
+/** The user's whereabouts and trips, as of `now`. */
+export async function locate(userId: UserId, now: Temporal.Instant, deps: Deps) {
   const [locations, trips] = await Promise.all([
     deps.repo.getLocations(userId),
     deps.repo.getTrips(userId),
@@ -122,18 +123,6 @@ function describe(whereabouts: Whereabouts, now: Temporal.Instant): WhereaboutsV
 
 function placeTime(zone: string, now: Temporal.Instant): PlaceTime {
   return { place: cityName(zone), zone, localTime: formatClock(now.toZonedDateTimeISO(zone)) };
-}
-
-/** The user's calendar date: in their zone, the departure zone in transit, or UTC if unknown. */
-function localDate(whereabouts: Whereabouts, now: Temporal.Instant): Temporal.PlainDate {
-  switch (whereabouts.kind) {
-    case "known":
-      return now.toZonedDateTimeISO(whereabouts.zone).toPlainDate();
-    case "in_transit":
-      return now.toZonedDateTimeISO(whereabouts.fromZone).toPlainDate();
-    case "unknown":
-      return now.toZonedDateTimeISO("UTC").toPlainDate();
-  }
 }
 
 function activeTrip(trips: readonly Trip[], today: Temporal.PlainDate): string | null {

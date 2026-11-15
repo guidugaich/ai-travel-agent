@@ -1,7 +1,7 @@
 import { Temporal } from "temporal-polyfill";
 import type { Location, Trip, TripEvent } from "./domain.js";
 import { cityName } from "./time/format.js";
-import { toZoned, type WallTime } from "./time/time.js";
+import { zonedOrThrow } from "./time/time.js";
 
 interface InTransit {
   readonly kind: "in_transit";
@@ -67,6 +67,23 @@ export function resolveWhereabouts(
   };
 }
 
+/** The zone the user's day follows: theirs, or the departure zone while in transit. */
+export function userZone(whereabouts: Whereabouts): string | null {
+  switch (whereabouts.kind) {
+    case "known":
+      return whereabouts.zone;
+    case "in_transit":
+      return whereabouts.fromZone;
+    case "unknown":
+      return null;
+  }
+}
+
+/** The user's calendar date, falling back to UTC when their zone is unknown. */
+export function userToday(whereabouts: Whereabouts, now: Temporal.Instant): Temporal.PlainDate {
+  return now.toZonedDateTimeISO(userZone(whereabouts) ?? "UTC").toPlainDate();
+}
+
 function fromLocation(location: Location, confidence: "high" | "medium"): Whereabouts {
   return {
     kind: "known",
@@ -104,8 +121,8 @@ function positionFrom(event: TripEvent, now: Temporal.Instant): TripPosition | n
   const endWall = event.end;
   if (endWall === undefined) return null;
 
-  const start = instantOf(event.start);
-  const end = instantOf(endWall);
+  const start = zonedOrThrow(event.start).toInstant();
+  const end = zonedOrThrow(endWall).toInstant();
   if (Temporal.Instant.compare(now, start) < 0) return null;
   const inProgress = Temporal.Instant.compare(now, end) < 0;
 
@@ -129,11 +146,4 @@ function positionFrom(event: TripEvent, now: Temporal.Instant): TripPosition | n
     case "call":
       return null;
   }
-}
-
-function instantOf(time: WallTime): Temporal.Instant {
-  const result = toZoned(time);
-  // Stored events were validated on import, so this signals corrupted data.
-  if (!result.ok) throw new Error(`Stored event has an invalid time: ${result.error.kind}`);
-  return result.value.toInstant();
 }

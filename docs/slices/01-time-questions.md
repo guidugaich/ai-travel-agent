@@ -97,7 +97,7 @@ A model's wording varies from run to run, so replies are checked for their value
 | Bus                  | 15 min                    |
 | Anything else        | 0                         |
 
-Travel time comes from, in order: the event's own `transit_minutes`, then your settings (`airport` for flights, `other` for everything else), then asking you. If the leave time has already passed, the reply says how late you are and how long until the event.
+Travel time comes from, in order: what you just said ("it's 45 minutes to the airport"), the event's own `transit_minutes`, then your settings (`airport` for flights, `other` for everything else), then asking you. If the leave time has already passed, the reply says how late you are and how long until the event.
 
 **Formatting** (always done by code):
 
@@ -203,8 +203,8 @@ D1 is costly to reverse, so it also has [ADR 0004](../adr/0004-temporal-for-time
 Each step ends with tests passing, and something you can see.
 
 1. ✅ **Time functions** in `packages/core`: wall time ↔ instant, durations, relative days, formatting, leave-by. Done when the edge-case table passes.
-2. **Domain and seed:** zod schemas, the seed loader (rejecting bad times), core services, timezone resolution, in-memory repositories. Done when examples 1–11 pass at the core level.
-3. **Storage:** Postgres adapters for trips, location state, conversations and usage, tested on PGlite; schema migrations; the `pnpm seed` import.
+2. ✅ **Domain and core services:** the trip import (rejecting bad times), timezone resolution, the services, an in-memory repository for tests. Done when examples 1–11 pass at the core level.
+3. **Storage:** Postgres adapters for trips, location state, conversations and usage, tested on PGlite; schema migrations; the `pnpm seed` import, with the seed file's zod schema.
 4. **The agent loop:** the LLM port, the tools, the preamble, the output check, all tested with a scripted fake model. Done when the conversation tests for examples 1–11 pass.
 5. **Telegram:** grammY with long polling, the share button, the allowlist. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
 6. **Real models:** the OpenAI-compatible adapter, and `pnpm eval` producing a scorecard (pass rate, latency, cost per conversation) for the candidates. You pick the model.

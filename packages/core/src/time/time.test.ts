@@ -1,12 +1,8 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import { elapsed, toZoned, zonedAt, type WallTime } from "./time.js";
+import { elapsed, toZoned, zonedAt, zonedOrThrow, type WallTime } from "./time.js";
 
-function instantOf(time: WallTime): Temporal.Instant {
-  const result = toZoned(time);
-  if (!result.ok) throw new Error(`expected a valid time, got ${result.error.kind}`);
-  return result.value.toInstant();
-}
+const instantOf = (time: WallTime): Temporal.Instant => zonedOrThrow(time).toInstant();
 
 describe("toZoned: wall time + zone → an exact moment", () => {
   test("a normal time", () => {
@@ -47,6 +43,14 @@ describe("toZoned: wall time + zone → an exact moment", () => {
     const result = toZoned({ local: "2027-04-10T12:00", zone: "America/Mexico_City" });
     expect(result.ok && result.value.offset).toBe("-06:00");
     expect(result.ok && result.value.toInstant().toString()).toBe("2027-04-10T18:00:00Z");
+  });
+});
+
+describe("zonedOrThrow: for stored times, validated on import", () => {
+  test("an invalid stored time means corrupted data, so it throws", () => {
+    expect(() => zonedOrThrow({ local: "2027-03-28T01:30", zone: "Europe/Lisbon" })).toThrow(
+      "Stored time is invalid: nonexistent",
+    );
   });
 });
 

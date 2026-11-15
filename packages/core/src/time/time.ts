@@ -50,6 +50,13 @@ export function toZoned(time: WallTime): Result<Temporal.ZonedDateTime, TimeErro
   return fail({ kind, local: time.local, zone: time.zone });
 }
 
+/** For stored times, which were validated on import: a failure means corrupted data. */
+export function zonedOrThrow(time: WallTime): Temporal.ZonedDateTime {
+  const result = toZoned(time);
+  if (!result.ok) throw new Error(`Stored time is invalid: ${result.error.kind}`);
+  return result.value;
+}
+
 export function zonedAt(
   instant: Temporal.Instant,
   zone: string,

@@ -1,23 +1,7 @@
 import { describe, expect, test } from "vitest";
-import type { Location, NewTrip } from "./domain.js";
 import { currentContext, setLocation, timeInZone } from "./location.js";
-import type { Deps } from "./ports.js";
 import { sharedLisbon, usEastCoast } from "./testing/fixtures.js";
-import { fixedClock } from "./testing/fixed-clock.js";
-import { MemoryRepository } from "./testing/memory-repository.js";
-
-const user = "user-1";
-
-async function setup(options: {
-  now?: string;
-  locations?: readonly Location[];
-  trips?: readonly NewTrip[];
-}): Promise<{ deps: Deps; repo: MemoryRepository }> {
-  const repo = new MemoryRepository();
-  for (const location of options.locations ?? []) await repo.setLocation(user, location);
-  await repo.replaceTrips(user, options.trips ?? []);
-  return { deps: { clock: fixedClock(options.now ?? "2026-10-13T09:12:00Z"), repo }, repo };
-}
+import { setupDeps as setup, testUser as user } from "./testing/setup.js";
 
 describe("currentContext", () => {
   test("example 1: you shared Lisbon yesterday", async () => {
