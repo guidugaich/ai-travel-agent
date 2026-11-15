@@ -1,5 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import {
+  EVENT_KINDS,
   importTrips,
   type ImportProblem,
   type Result,
@@ -29,7 +30,7 @@ const seedFile = z.strictObject({
       endDate: z.iso.date().exactOptional(),
       events: z.array(
         z.strictObject({
-          kind: z.enum(["flight", "train", "bus", "ferry", "stay", "activity", "call"]),
+          kind: z.enum(EVENT_KINDS),
           title: z.string().min(1),
           start: wallTime,
           end: wallTime.exactOptional(),

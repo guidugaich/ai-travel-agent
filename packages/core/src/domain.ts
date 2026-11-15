@@ -9,7 +9,9 @@ export interface User {
   readonly transitMinutes: { readonly airport?: number; readonly other?: number };
 }
 
-export type EventKind = "flight" | "train" | "bus" | "ferry" | "stay" | "activity" | "call";
+export const EVENT_KINDS = ["flight", "train", "bus", "ferry", "stay", "activity", "call"] as const;
+
+export type EventKind = (typeof EVENT_KINDS)[number];
 
 export interface NewTripEvent {
   readonly kind: EventKind;

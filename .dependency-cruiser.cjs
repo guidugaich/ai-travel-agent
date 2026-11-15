@@ -42,6 +42,14 @@ module.exports = {
       to: { dependencyTypes: ["core"] },
     },
     {
+      name: "testing-helpers-only-in-tests",
+      severity: "error",
+      comment:
+        "Fakes and fixtures in testing/ folders are for tests; production code must never use them.",
+      from: { pathNot: "(\\.test\\.ts$|/testing/)" },
+      to: { path: "/src/testing/" },
+    },
+    {
       name: "no-circular",
       severity: "error",
       comment: "Circular dependencies make layering meaningless.",

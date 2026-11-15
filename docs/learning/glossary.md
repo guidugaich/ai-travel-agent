@@ -60,7 +60,7 @@ In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with
 - The model can't run them itself. It replies with a structured request: "call `get_next_event` with these arguments".
 - Our backend runs the function and sends the result back in the next request.
 
-The model is a planner that issues RPC requests; our server executes them, so our code is the gatekeeper. The exact message format varies by provider.
+The model is a planner that issues RPC requests; our server executes them, so our code is the gatekeeper. The exact message format varies by provider. A tool's description, and its arguments' descriptions, are instructions the model reads ("pass the user's own word for the day"), so much of the prompt engineering lives there. Ours are generated from zod schemas, which also check what the model sends.
 
 **Agent loop.** A loop around the model call:
 

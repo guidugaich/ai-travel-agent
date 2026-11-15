@@ -8,6 +8,7 @@ export type {
   User,
   UserId,
 } from "./domain.ts";
+export { EVENT_KINDS } from "./domain.ts";
 export { computeLeaveBy, eventsOnDay, getNextEvent } from "./events.ts";
 export type { DayEvents, EventView, LeaveByAnswer } from "./events.ts";
 export { importTrips } from "./import-trips.ts";
