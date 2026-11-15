@@ -18,7 +18,7 @@ describe("leaveBy", () => {
     expect(plan.leaveAt.toZonedDateTimeISO("Europe/Lisbon").toPlainTime().toString()).toBe(
       "13:35:00",
     );
-    expect(plan).toMatchObject({ bufferMinutes: 180, transitMinutes: 30, late: false });
+    expect(plan).toMatchObject({ bufferMinutes: 180, late: false });
     expect(plan.leaveIn.toString()).toBe("PT27H23M");
   });
 

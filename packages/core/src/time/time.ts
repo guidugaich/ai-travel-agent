@@ -28,18 +28,8 @@ export function toZoned(time: WallTime): Result<Temporal.ZonedDateTime, TimeErro
     return fail({ kind: "invalid_local_time", local: time.local });
   }
 
-  const fields = {
-    year: local.year,
-    month: local.month,
-    day: local.day,
-    hour: local.hour,
-    minute: local.minute,
-    second: local.second,
-    timeZone: time.zone,
-  };
-
-  const earlier = Temporal.ZonedDateTime.from(fields, { disambiguation: "earlier" });
-  const later = Temporal.ZonedDateTime.from(fields, { disambiguation: "later" });
+  const earlier = local.toZonedDateTime(time.zone, { disambiguation: "earlier" });
+  const later = local.toZonedDateTime(time.zone, { disambiguation: "later" });
   if (earlier.equals(later)) return ok(earlier);
 
   // Both candidates keep the requested wall time only when it happens twice.

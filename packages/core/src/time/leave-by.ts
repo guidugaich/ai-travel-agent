@@ -15,7 +15,6 @@ export interface LeavePlan {
   readonly leaveIn: Temporal.Duration;
   readonly late: boolean;
   readonly bufferMinutes: number;
-  readonly transitMinutes: number;
 }
 
 /** How long before the start to be there. */
@@ -45,5 +44,5 @@ export function leaveBy(
   const buffer = bufferMinutes(event);
   const leaveAt = event.start.subtract({ minutes: buffer + transitMinutes });
   const leaveIn = elapsed(now, leaveAt);
-  return { leaveAt, leaveIn, late: leaveIn.sign < 0, bufferMinutes: buffer, transitMinutes };
+  return { leaveAt, leaveIn, late: leaveIn.sign < 0, bufferMinutes: buffer };
 }
