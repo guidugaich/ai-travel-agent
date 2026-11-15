@@ -1,5 +1,5 @@
-import type { Location, NewTrip, Trip, User, UserId } from "../domain.js";
-import type { Repository } from "../ports.js";
+import type { Location, NewTrip, Trip, User, UserId } from "../domain.ts";
+import type { Repository } from "../ports.ts";
 
 export class MemoryRepository implements Repository {
   private readonly users = new Map<UserId, User>();

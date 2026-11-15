@@ -1,7 +1,7 @@
-import type { Location, NewTrip, User } from "../domain.js";
-import type { Deps } from "../ports.js";
-import { fixedClock } from "./fixed-clock.js";
-import { MemoryRepository } from "./memory-repository.js";
+import type { Location, NewTrip, User } from "../domain.ts";
+import type { Deps } from "../ports.ts";
+import { fixedClock } from "./fixed-clock.ts";
+import { MemoryRepository } from "./memory-repository.ts";
 
 export const testUser = "user-1";
 

@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, onTestFinished, test } from "vitest";
-import { migrate } from "./migrate.js";
+import { migrate } from "./migrate.ts";
 
 /** An empty in-memory database, closed when the test ends, pass or fail. */
 function emptyDb(): PGlite {

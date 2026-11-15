@@ -1,7 +1,7 @@
 import { Temporal } from "temporal-polyfill";
-import type { Location, Trip, TripEvent } from "./domain.js";
-import { cityName } from "./time/format.js";
-import { zonedOrThrow } from "./time/time.js";
+import type { Location, Trip, TripEvent } from "./domain.ts";
+import { cityName } from "./time/format.ts";
+import { zonedOrThrow } from "./time/time.ts";
 
 interface InTransit {
   readonly kind: "in_transit";

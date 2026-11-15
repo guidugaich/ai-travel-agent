@@ -1,8 +1,8 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import type { Location } from "./domain.js";
-import { sharedLisbon, stored, usEastCoast } from "./testing/fixtures.js";
-import { resolveWhereabouts } from "./whereabouts.js";
+import type { Location } from "./domain.ts";
+import { sharedLisbon, stored, usEastCoast } from "./testing/fixtures.ts";
+import { resolveWhereabouts } from "./whereabouts.ts";
 
 const at = (iso: string) => Temporal.Instant.from(iso);
 const trips = [stored(usEastCoast)];

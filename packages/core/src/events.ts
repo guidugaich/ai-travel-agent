@@ -1,8 +1,8 @@
 import { Temporal } from "temporal-polyfill";
-import type { EventKind, TripEvent, User, UserId } from "./domain.js";
-import { locate } from "./location.js";
-import type { Deps } from "./ports.js";
-import { relativeDayLabel, resolveDay, type RelativeDay } from "./time/days.js";
+import type { EventKind, TripEvent, User, UserId } from "./domain.ts";
+import { locate } from "./location.ts";
+import type { Deps } from "./ports.ts";
+import { relativeDayLabel, resolveDay, type RelativeDay } from "./time/days.ts";
 import {
   cityName,
   formatClock,
@@ -10,10 +10,10 @@ import {
   formatDuration,
   formatLeaveAssumptions,
   type TravelTimeSource,
-} from "./time/format.js";
-import { leaveBy } from "./time/leave-by.js";
-import { elapsed, zonedOrThrow } from "./time/time.js";
-import { userToday, userZone } from "./whereabouts.js";
+} from "./time/format.ts";
+import { leaveBy } from "./time/leave-by.ts";
+import { elapsed, zonedOrThrow } from "./time/time.ts";
+import { userToday, userZone } from "./whereabouts.ts";
 
 /** A moment in its own zone, ready to say. `relativeDay` is relative to the user's today. */
 export interface EventTime {

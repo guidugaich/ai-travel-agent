@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
-import type { NewTrip } from "./domain.js";
-import { importTrips } from "./import-trips.js";
-import { usEastCoast } from "./testing/fixtures.js";
-import { MemoryRepository } from "./testing/memory-repository.js";
+import type { NewTrip } from "./domain.ts";
+import { importTrips } from "./import-trips.ts";
+import { usEastCoast } from "./testing/fixtures.ts";
+import { MemoryRepository } from "./testing/memory-repository.ts";
 
 const user = "user-1";
 

@@ -1,6 +1,6 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import { bufferMinutes, leaveBy, type LeaveByEvent } from "./leave-by.js";
+import { bufferMinutes, leaveBy, type LeaveByEvent } from "./leave-by.ts";
 
 const instant = (iso: string) => Temporal.Instant.from(iso);
 

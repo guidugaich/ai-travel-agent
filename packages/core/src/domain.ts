@@ -1,5 +1,5 @@
 import type { Temporal } from "temporal-polyfill";
-import type { WallTime } from "./time/time.js";
+import type { WallTime } from "./time/time.ts";
 
 export type UserId = string;
 

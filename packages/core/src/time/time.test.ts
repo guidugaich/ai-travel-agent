@@ -1,6 +1,6 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import { elapsed, toZoned, zonedAt, zonedOrThrow, type WallTime } from "./time.js";
+import { elapsed, toZoned, zonedAt, zonedOrThrow, type WallTime } from "./time.ts";
 
 const instantOf = (time: WallTime): Temporal.Instant => zonedOrThrow(time).toInstant();
 

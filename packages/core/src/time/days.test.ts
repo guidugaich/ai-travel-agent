@@ -1,6 +1,6 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import { relativeDayLabel, resolveDay } from "./days.js";
+import { relativeDayLabel, resolveDay } from "./days.ts";
 
 const at = (iso: string) => Temporal.ZonedDateTime.from(iso);
 const date = (iso: string) => Temporal.PlainDate.from(iso);

@@ -1,6 +1,6 @@
 import type { Temporal } from "temporal-polyfill";
-import type { EventKind } from "../domain.js";
-import { elapsed } from "./time.js";
+import type { EventKind } from "../domain.ts";
+import { elapsed } from "./time.ts";
 
 /** What leave-by needs: the kind, the start, and whether a flight is international. */
 export interface LeaveByEvent {

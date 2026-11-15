@@ -1,7 +1,7 @@
 import { Temporal } from "temporal-polyfill";
-import type { EventKind, NewTrip, NewTripEvent, UserId } from "./domain.js";
-import type { Repository } from "./ports.js";
-import { toZoned, type Result, type TimeError } from "./time/time.js";
+import type { EventKind, NewTrip, NewTripEvent, UserId } from "./domain.ts";
+import type { Repository } from "./ports.ts";
+import { toZoned, type Result, type TimeError } from "./time/time.ts";
 
 export type ImportProblem =
   | { readonly kind: "missing"; readonly event: string; readonly field: "end" | "flight" }

@@ -1,5 +1,5 @@
 import type { Temporal } from "temporal-polyfill";
-import type { Location, NewTrip, Trip, User, UserId } from "./domain.js";
+import type { Location, NewTrip, Trip, User, UserId } from "./domain.ts";
 
 /** The only way core code learns the current time; tests pass a fixed one. */
 export interface Clock {

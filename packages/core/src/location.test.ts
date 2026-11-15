@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { currentContext, setLocation, timeInZone } from "./location.js";
-import { sharedLisbon, usEastCoast } from "./testing/fixtures.js";
-import { setupDeps as setup, testUser as user } from "./testing/setup.js";
+import { currentContext, setLocation, timeInZone } from "./location.ts";
+import { sharedLisbon, usEastCoast } from "./testing/fixtures.ts";
+import { setupDeps as setup, testUser as user } from "./testing/setup.ts";
 
 describe("currentContext", () => {
   test("example 1: you shared Lisbon yesterday", async () => {

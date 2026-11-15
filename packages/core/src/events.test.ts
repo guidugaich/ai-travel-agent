@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { NewTrip, User } from "./domain.js";
-import { computeLeaveBy, eventsOnDay, getNextEvent } from "./events.js";
-import { sharedLisbon, usEastCoast } from "./testing/fixtures.js";
-import type { MemoryRepository } from "./testing/memory-repository.js";
-import { setupDeps, testUser as user } from "./testing/setup.js";
+import type { NewTrip, User } from "./domain.ts";
+import { computeLeaveBy, eventsOnDay, getNextEvent } from "./events.ts";
+import { sharedLisbon, usEastCoast } from "./testing/fixtures.ts";
+import type { MemoryRepository } from "./testing/memory-repository.ts";
+import { setupDeps, testUser as user } from "./testing/setup.ts";
 
 const withAirportSetting: User = { id: user, transitMinutes: { airport: 30 } };
 

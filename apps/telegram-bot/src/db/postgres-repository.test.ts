@@ -2,8 +2,8 @@ import { PGlite } from "@electric-sql/pglite";
 import type { EventKind, Location, NewTrip, Repository } from "@ai-travel-agent/core";
 import { Temporal } from "temporal-polyfill";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
-import { migrate } from "./migrate.js";
-import { postgresRepository } from "./postgres-repository.js";
+import { migrate } from "./migrate.ts";
+import { postgresRepository } from "./postgres-repository.ts";
 
 const you = "00000000-0000-4000-8000-000000000001";
 const someoneElse = "00000000-0000-4000-8000-000000000002";

@@ -1,5 +1,5 @@
 import { Temporal } from "temporal-polyfill";
-import type { Location, NewTrip, Trip } from "../domain.js";
+import type { Location, NewTrip, Trip } from "../domain.ts";
 
 // The spec's default setup (docs/slices/01-time-questions.md).
 

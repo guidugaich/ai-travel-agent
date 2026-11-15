@@ -1,6 +1,6 @@
 import { Temporal } from "temporal-polyfill";
 import { describe, expect, test } from "vitest";
-import { cityName, formatClock, formatDate, formatDuration } from "./format.js";
+import { cityName, formatClock, formatDate, formatDuration } from "./format.ts";
 
 describe("formatDuration", () => {
   test.each([

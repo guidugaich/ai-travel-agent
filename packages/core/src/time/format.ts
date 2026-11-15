@@ -1,5 +1,5 @@
 import { Temporal } from "temporal-polyfill";
-import type { EventKind } from "../domain.js";
+import type { EventKind } from "../domain.ts";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const MONTHS = [

@@ -1,9 +1,9 @@
 import { Temporal } from "temporal-polyfill";
-import type { Location, Trip, UserId } from "./domain.js";
-import type { Deps } from "./ports.js";
-import { cityName, formatClock, formatDate } from "./time/format.js";
-import { zonedAt, type Result, type TimeError } from "./time/time.js";
-import { resolveWhereabouts, userToday, type Whereabouts } from "./whereabouts.js";
+import type { Location, Trip, UserId } from "./domain.ts";
+import type { Deps } from "./ports.ts";
+import { cityName, formatClock, formatDate } from "./time/format.ts";
+import { zonedAt, type Result, type TimeError } from "./time/time.ts";
+import { resolveWhereabouts, userToday, type Whereabouts } from "./whereabouts.ts";
 
 /** A zone's current local time, ready to say. */
 export interface PlaceTime {

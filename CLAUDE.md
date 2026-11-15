@@ -48,15 +48,17 @@ Node comes from `.nvmrc` (`nvm use`), and pnpm is pinned in `package.json`.
 | `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest                             |
 | `pnpm secrets:check`                         | secretlint                         |
+| `pnpm seed`                                  | Import `seed.json` into `.data/`   |
 
 ## Conventions
 
 - TypeScript strict, no `any`, exhaustive switches, zod to validate data at boundaries.
 - Tests sit next to the code as `*.test.ts`.
+- Node runs the TypeScript directly, with no build step: relative imports end in `.ts`, and only syntax Node can strip is allowed (no `enum`, no constructor parameter properties).
 - Write an ADR in `docs/adr/` only for decisions that are costly to reverse. Smaller decisions go in the slice spec.
 - Never invent a library API. Read the installed package or its docs, and verify by running code.
 - Code comments: rare, one line, only for non-obvious reasoning.
-- Conventional commit messages, as a habit (not enforced).
+- Conventional commit messages, one line only, as a habit (not enforced). Reasoning goes in the slice spec or an ADR.
 - When conventions or boundaries change, update this file and ARCHITECTURE.md.
 
 ## Git
