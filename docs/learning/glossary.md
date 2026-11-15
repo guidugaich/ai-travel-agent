@@ -53,6 +53,8 @@ In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with
 
 **Context preamble.** Text our code computes and adds to every turn: current UTC time, the user's timezone (with confidence and source), local time, the active trip. The model reads these facts; it never works them out.
 
+**Output check.** A guard on the model's reply, run by code before it's sent. It finds every time, date, duration and relative day in the reply and requires each to appear in the preamble or in this turn's tool results. It's the same idea as validating an API response before trusting it: the model is fluent, not reliable, so anything it states as fact gets checked against what our code computed.
+
 **Context window.** The maximum amount of text (measured in tokens) one request can carry. Long conversations need to be trimmed or summarized to fit.
 
 **Tool calling / function calling.** We describe our functions to the model (name, description, JSON schema for the arguments).

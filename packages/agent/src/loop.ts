@@ -1,5 +1,13 @@
 import type { Result } from "@ai-travel-agent/core";
-import type { LlmClient, Message, ToolCall, ToolDefinition, Usage } from "./llm.ts";
+import {
+  addUsage,
+  NO_USAGE,
+  type LlmClient,
+  type Message,
+  type ToolCall,
+  type ToolDefinition,
+  type Usage,
+} from "./llm.ts";
 
 /** Something the model can ask us to run. Bad arguments come back as an error the model reads; bugs throw. */
 export interface Tool {
@@ -10,32 +18,27 @@ export interface Tool {
 export const MAX_MODEL_CALLS = 8;
 
 /** `steps` are this turn's tool calls and their results, in the order they happened. */
-export type LoopResult =
-  | {
-      readonly kind: "answer";
-      readonly text: string;
-      readonly steps: readonly Message[];
-      readonly usage: Usage;
-    }
-  | { readonly kind: "gave_up"; readonly steps: readonly Message[]; readonly usage: Usage };
+export type LoopResult = (
+  { readonly kind: "answer"; readonly text: string } | { readonly kind: "gave_up" }
+) & { readonly steps: readonly Message[]; readonly calls: number; readonly usage: Usage };
 
-/** Asks the model, runs the tools it asks for, and repeats until it answers or hits the call limit. */
+/** Asks the model, runs the tools it asks for, and repeats until it answers or uses up `maxCalls`. */
 export async function runLoop(
   llm: LlmClient,
   messages: readonly Message[],
   tools: readonly Tool[],
+  maxCalls = MAX_MODEL_CALLS,
 ): Promise<LoopResult> {
   const definitions = tools.map((tool) => tool.definition);
   const steps: Message[] = [];
-  let usage: Usage = { inputTokens: 0, outputTokens: 0 };
+  let usage: Usage = NO_USAGE;
 
-  for (let call = 1; call <= MAX_MODEL_CALLS; call++) {
+  for (let calls = 1; calls <= maxCalls; calls++) {
     const reply = await llm.chat({ messages: [...messages, ...steps], tools: definitions });
-    usage = {
-      inputTokens: usage.inputTokens + reply.usage.inputTokens,
-      outputTokens: usage.outputTokens + reply.usage.outputTokens,
-    };
-    if (reply.toolCalls.length === 0) return { kind: "answer", text: reply.content, steps, usage };
+    usage = addUsage(usage, reply.usage);
+    if (reply.toolCalls.length === 0) {
+      return { kind: "answer", text: reply.content, steps, calls, usage };
+    }
 
     steps.push({ role: "assistant", content: reply.content, toolCalls: reply.toolCalls });
     for (const toolCall of reply.toolCalls) {
@@ -46,7 +49,7 @@ export async function runLoop(
       });
     }
   }
-  return { kind: "gave_up", steps, usage };
+  return { kind: "gave_up", steps, calls: maxCalls, usage };
 }
 
 async function runTool(tools: readonly Tool[], call: ToolCall): Promise<string> {

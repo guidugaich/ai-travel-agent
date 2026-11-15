@@ -115,6 +115,16 @@ describe("runLoop", () => {
     expect(llm.requests).toHaveLength(MAX_MODEL_CALLS);
   });
 
+  test("a smaller budget can be given, and the calls used are reported", async () => {
+    const llm = scriptedLlm([
+      { toolCalls: [{ name: "get_next_event", arguments: {} }] },
+      { toolCalls: [{ name: "get_next_event", arguments: {} }] },
+      { text: "Too late." },
+    ]);
+    const result = await runLoop(llm, question, [fakeTool("get_next_event", {})], 2);
+    expect(result).toMatchObject({ kind: "gave_up", calls: 2 });
+  });
+
   test("token usage adds up across model calls", async () => {
     const llm = scriptedLlm([
       { toolCalls: [{ name: "get_next_event", arguments: {} }] },

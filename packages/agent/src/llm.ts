@@ -43,3 +43,12 @@ export interface Usage {
   readonly inputTokens: number;
   readonly outputTokens: number;
 }
+
+export const NO_USAGE: Usage = { inputTokens: 0, outputTokens: 0 };
+
+export function addUsage(a: Usage, b: Usage): Usage {
+  return {
+    inputTokens: a.inputTokens + b.inputTokens,
+    outputTokens: a.outputTokens + b.outputTokens,
+  };
+}
