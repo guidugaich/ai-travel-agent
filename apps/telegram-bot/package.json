@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@ai-travel-agent/agent": "workspace:*",
-    "@ai-travel-agent/core": "workspace:*"
+    "@ai-travel-agent/core": "workspace:*",
+    "@electric-sql/pglite": "0.5.16",
+    "temporal-polyfill": "1.0.5"
   }
 }

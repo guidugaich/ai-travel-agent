@@ -61,6 +61,30 @@ A travel agent you talk to in chat. It takes a loose idea ("Asia this summer", "
 - Under $20/month for hosting, EU region. LLM spend capped per user per day.
 - No secrets or personal data in the repo, logs or test data.
 
+## Privacy (EU GDPR)
+
+While you're the only user, the data is your own. Once anyone else uses the bot, the GDPR applies in full. This is an engineering checklist, not legal advice: check it against the regulation's text before others use the bot.
+
+**Built in from the start**
+
+- **Minimum data** (Art. 5): a shared location becomes a timezone and the coordinates are dropped. Logs hold ids and timings, never message text.
+- **No personal data in the repo, logs or test data** (Art. 25, data protection by design). `seed.json`, which holds your Telegram id, is git-ignored.
+- **One delete removes everything** (Art. 17, right to erasure): every table links to the user with `on delete cascade`, and a test checks it.
+- **EU hosting** for the app and the database (step 7).
+
+**When the step that needs it arrives**
+
+- **Conversation history (slice 1, step 4):** keep only the last 20 messages per user (Art. 5, storage limitation).
+- **Models (slice 1, step 6):** the LLM provider receives your messages, which makes it a processor (Art. 28) and may be a transfer outside the EU (Chapter V). The eval scorecard records each candidate's data terms: a data processing agreement, retention, whether inputs train models, and where processing happens. Self-hosted or EU-hosted models avoid the transfer.
+- **Deploy (slice 1, step 7):** encrypted connections, and backups that expire (Art. 32, security).
+
+**Before anyone else uses the bot**
+
+- A short privacy notice on `/start` (Art. 13): what's stored, why, for how long, and who processes it, including Telegram and the LLM provider.
+- `/export` and `/delete` commands (Art. 15, 17 and 20).
+- A lawful basis for each use of the data (Art. 6).
+- A plan for data breaches (Art. 33: tell the supervisory authority within 72 hours).
+
 ## Competitors
 
 As of 2026-10-07: general assistants (ChatGPT, Gemini), booking-site assistants (Expedia, which owns Layla, plus Booking.com and Kayak), AI-first startups (Mindtrip, Airial, Stardrift), chat-app bots (GuideGeek) and trip organizers (TripIt, Wanderlog). Planning from a loose idea is crowded. Nobody advertises being correct about time, or plan changes that are validated and can be undone.

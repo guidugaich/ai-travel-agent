@@ -25,7 +25,7 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
 - The plan changes only through core services that validate the change and return a diff. Ambiguous or destructive changes need the user's confirmation.
 - No code reads the system clock; a Clock is injected.
 - The agent depends on our own LLM port, and vendor SDKs live only in adapters. Evals decide which model to use.
-- Privacy by design: no secrets or personal data in the repo, logs or test data.
+- Privacy by design: no secrets or personal data in the repo, logs or test data. Follow the GDPR checklist in [docs/product.md](docs/product.md#privacy-eu-gdpr).
 
 ## Architecture rules (hexagonal)
 

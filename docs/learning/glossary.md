@@ -102,4 +102,8 @@ That loop is all an "agent" is. It runs inside our process each time a new messa
 
 **Install scripts (supply chain).** npm packages can run code when they're installed, which is a common route for attacks. pnpm blocks this by default, and we keep it that way (`allowBuilds` in `pnpm-workspace.yaml`).
 
+**PGlite.** Real Postgres compiled to WebAssembly, running inside the Node process instead of as a separate server. Tests start an empty in-memory database in about half a second, with no Docker. Local dev saves one to a folder. It allows one connection at a time, so production uses a normal Postgres server.
+
+**Migration.** A numbered `.sql` file that changes the database's structure. The runner applies the files a database hasn't run yet, in order, and records each one in a `migrations` table. Once a migration has run on a real database, it's never edited: a change goes in a new file.
+
 **Architecture tests / dependency-cruiser.** A linter for structure, not style. It builds the graph of which file imports which, and fails if an import breaks a boundary rule, such as core importing Telegram code.
