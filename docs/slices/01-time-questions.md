@@ -42,7 +42,7 @@ These are the acceptance tests. Every value was computed with the time library c
 | 7   | What time is it? _(nothing known about your location)_                                                                   | Ask where you are and point to the share button                                                          | (no time)                                                                                       |
 | 8   | What time is it? _(now `2026-10-15T14:00:00Z`; your flight landed in New York after you shared Lisbon)_                  | Use New York from the trip, and say so                                                                   | 10:00, New York, based on your trip                                                             |
 | 9   | What time is it? _(now `2026-10-14T20:00:00Z`, mid-flight)_                                                              | Say you're in flight and give both times                                                                 | 21:00 Lisbon, 16:00 New York                                                                    |
-| 10  | When does my flight land? _(trip: NRT → HNL, departing Mon 2 Nov 21:00 `Asia/Tokyo`, arriving 09:00 `Pacific/Honolulu`)_ | Call `get_next_event`                                                                                    | Mon 2 Nov, 09:00 Honolulu time, 7 h                                                             |
+| 10  | When does my flight land? _(trip: NRT → HNL, departing Mon 2 Nov 21:00 `Asia/Tokyo`, arriving 09:00 `Pacific/Honolulu`)_ | Call `get_next_event` with `kind: flight`                                                                | Mon 2 Nov, 09:00 Honolulu time, 7 h                                                             |
 | 11  | I'm in Kathmandu now _(no shared location in the last 3 days)_                                                           | Call `set_my_location` with `Asia/Kathmandu` and confirm                                                 | Kathmandu, 14:57, based on what you said                                                        |
 
 Each example is checked three ways:
@@ -112,13 +112,13 @@ Travel time comes from, in order: what you just said ("it's 45 minutes to the ai
 
 Each tool is a thin wrapper over one core function. Inputs are validated with zod. Results include ready-to-say `display` strings, so the model only ever repeats values.
 
-| Tool               | Input                                                 | Returns                                                                                                                           |
-| ------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `time_in_zone`     | `zone`, a valid IANA name                             | Local time, date and city in that zone                                                                                            |
-| `set_my_location`  | `zone`, `place_name`                                  | Stores what you said, and whether it's in effect (a shared location from the last 3 days takes priority), plus its local time now |
-| `get_next_event`   | (none)                                                | The next event: start and end in their own zones, duration, relative day, time until                                              |
-| `events_on_day`    | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD` | That day's events, _or_ `ambiguous` with options to offer you                                                                     |
-| `compute_leave_by` | `event_id`, optional `transit_minutes`                | The leave time, time until then, and the assumptions; _or_ `need_transit_time`                                                    |
+| Tool               | Input                                                   | Returns                                                                                                                           |
+| ------------------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `time_in_zone`     | `zone`, a valid IANA name                               | Local time, date and city in that zone                                                                                            |
+| `set_my_location`  | `zone`, `place_name`                                    | Stores what you said, and whether it's in effect (a shared location from the last 3 days takes priority), plus its local time now |
+| `get_next_event`   | optional `kind` (`flight`, `train`, …), for "my flight" | The next event, or the next of that kind: start and end in their own zones, duration, relative day, time until                    |
+| `events_on_day`    | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD`   | That day's events, _or_ `ambiguous` with options to offer you                                                                     |
+| `compute_leave_by` | `event_id`, optional `transit_minutes`                  | The leave time, time until then, and the assumptions; _or_ `need_transit_time`                                                    |
 
 These don't go through the model at all; the Telegram adapter calls the core directly:
 

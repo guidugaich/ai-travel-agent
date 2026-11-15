@@ -21,6 +21,18 @@ const tokyoToHonolulu: NewTrip = {
   ],
 };
 
+const dinnerTonight: NewTrip = {
+  title: "Lisbon",
+  startDate: "2026-10-13",
+  events: [
+    {
+      kind: "activity",
+      title: "Dinner",
+      start: { local: "2026-10-13T20:00", zone: "Europe/Lisbon" },
+    },
+  ],
+};
+
 async function firstEventId(repo: MemoryRepository): Promise<string> {
   const [trip] = await repo.getTrips(user);
   const id = trip?.events[0]?.id;
@@ -31,7 +43,7 @@ async function firstEventId(repo: MemoryRepository): Promise<string> {
 describe("getNextEvent", () => {
   test("example 3: your flight tomorrow", async () => {
     const { deps } = await setupDeps({ locations: [sharedLisbon], trips: [usEastCoast] });
-    expect(await getNextEvent(user, deps)).toEqual({
+    expect(await getNextEvent(user, undefined, deps)).toEqual({
       id: expect.any(String) as unknown,
       title: "Flight LIS → JFK",
       kind: "flight",
@@ -56,7 +68,7 @@ describe("getNextEvent", () => {
 
   test("example 10: over the date line, it lands at an earlier local time", async () => {
     const { deps } = await setupDeps({ locations: [sharedLisbon], trips: [tokyoToHonolulu] });
-    expect(await getNextEvent(user, deps)).toMatchObject({
+    expect(await getNextEvent(user, "flight", deps)).toMatchObject({
       start: { place: "Tokyo", localTime: "21:00", date: "Mon 2 Nov", relativeDay: null },
       end: { place: "Honolulu", localTime: "09:00", date: "Mon 2 Nov" },
       duration: "7 h",
@@ -64,22 +76,11 @@ describe("getNextEvent", () => {
   });
 
   test("the earliest upcoming event wins, whatever trip it's in", async () => {
-    const evening: NewTrip = {
-      title: "Lisbon",
-      startDate: "2026-10-13",
-      events: [
-        {
-          kind: "activity",
-          title: "Dinner",
-          start: { local: "2026-10-13T20:00", zone: "Europe/Lisbon" },
-        },
-      ],
-    };
     const { deps } = await setupDeps({
       locations: [sharedLisbon],
-      trips: [usEastCoast, evening],
+      trips: [usEastCoast, dinnerTonight],
     });
-    expect(await getNextEvent(user, deps)).toMatchObject({
+    expect(await getNextEvent(user, undefined, deps)).toMatchObject({
       title: "Dinner",
       start: { relativeDay: "today" },
       end: null,
@@ -87,9 +88,19 @@ describe("getNextEvent", () => {
     });
   });
 
+  test("'my flight' finds the next flight, even with something else before it", async () => {
+    const { deps } = await setupDeps({
+      locations: [sharedLisbon],
+      trips: [usEastCoast, dinnerTonight],
+    });
+    expect(await getNextEvent(user, "flight", deps)).toMatchObject({
+      title: "Flight LIS → JFK",
+    });
+  });
+
   test("nothing ahead means no next event", async () => {
     const { deps } = await setupDeps({ now: "2026-10-20T10:00:00Z", trips: [usEastCoast] });
-    expect(await getNextEvent(user, deps)).toBeNull();
+    expect(await getNextEvent(user, undefined, deps)).toBeNull();
   });
 });
 

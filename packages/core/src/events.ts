@@ -65,9 +65,18 @@ interface Scheduled {
   readonly start: Temporal.ZonedDateTime;
 }
 
-export async function getNextEvent(userId: UserId, deps: Deps): Promise<EventView | null> {
+/** The next event to start, or the next of one kind ("my flight"). */
+export async function getNextEvent(
+  userId: UserId,
+  kind: EventKind | undefined,
+  deps: Deps,
+): Promise<EventView | null> {
   const { now, today, schedule } = await load(userId, deps);
-  const next = schedule.find(({ start }) => Temporal.Instant.compare(start.toInstant(), now) > 0);
+  const next = schedule.find(
+    ({ event, start }) =>
+      (kind === undefined || event.kind === kind) &&
+      Temporal.Instant.compare(start.toInstant(), now) > 0,
+  );
   return next === undefined ? null : view(next, now, today);
 }
 
