@@ -1,7 +1,7 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
-import { openDatabase } from "./db/database.ts";
+import { openDatabase, type Database } from "./db/database.ts";
 import { postgresRepository, telegramUserId } from "./db/postgres-repository.ts";
 import { seed } from "./seed.ts";
 
@@ -22,10 +22,12 @@ const valid = {
   ],
 };
 
+let database: Database;
 let db: PGlite;
 
 beforeAll(async () => {
-  db = await openDatabase("memory://");
+  database = await openDatabase("memory://");
+  db = database.db;
 });
 
 beforeEach(async () => {
@@ -33,7 +35,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await db.close();
+  await database.close();
 });
 
 async function stored() {

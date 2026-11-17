@@ -100,7 +100,7 @@ async function main(path: string): Promise<number> {
     return 1;
   }
 
-  const db = await openDatabase();
+  const { db, close } = await openDatabase();
   try {
     const result = await seed(db, file);
     if (!result.ok) {
@@ -110,7 +110,7 @@ async function main(path: string): Promise<number> {
     console.log(`Imported. Trips: ${result.value.trips}, events: ${result.value.events}.`);
     return 0;
   } finally {
-    await db.close();
+    await close();
   }
 }
 
