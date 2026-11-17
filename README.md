@@ -17,7 +17,7 @@ The same principle covers other facts that change, such as prices, availability 
 
 ## Current state
 
-The core is built (time rules, where you are, your trip's events and leave-by times), and so is storage (Postgres, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot comes next, then real models.
+The core is built (time rules, where you are, your trip's events and leave-by times), and so is storage (Postgres, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a stand-in model; real models come next.
 
 The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 
@@ -64,17 +64,18 @@ pnpm check     # runs every check CI runs
 
 ## Commands
 
-| Command                                                | What it does                                        |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| `pnpm check`                                           | Everything below, in the same order as CI           |
-| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting            |
-| `pnpm lint`                                            | ESLint with type-aware rules                        |
-| `pnpm typecheck`                                       | TypeScript in every workspace                       |
-| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser  |
-| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid       |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                              |
-| `pnpm secrets:check`                                   | Scan the repo for committed secrets                 |
-| `pnpm seed`                                            | Load `seed.json` into the local database (`.data/`) |
+| Command                                                | What it does                                                         |
+| ------------------------------------------------------ | -------------------------------------------------------------------- |
+| `pnpm check`                                           | Everything below, in the same order as CI                            |
+| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting                             |
+| `pnpm lint`                                            | ESLint with type-aware rules                                         |
+| `pnpm typecheck`                                       | TypeScript in every workspace                                        |
+| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser                   |
+| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid                        |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                                               |
+| `pnpm secrets:check`                                   | Scan the repo for committed secrets                                  |
+| `pnpm seed`                                            | Load `seed.json` into the local database (`.data/`)                  |
+| `pnpm bot`                                             | Run the Telegram bot; settings come from `.env` (see `.env.example`) |
 
 ## Tooling and guardrails
 

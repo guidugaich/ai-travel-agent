@@ -8,7 +8,7 @@ import {
 } from "@ai-travel-agent/core/testing";
 import type { Chat, Message, Update, UserFromGetMe } from "grammy/types";
 import { describe, expect, test } from "vitest";
-import { createBot } from "./bot.ts";
+import { createBot, type LogEntry } from "./bot.ts";
 
 const you = 4242;
 const stranger = 9999;
@@ -33,6 +33,7 @@ const botInfo: UserFromGetMe = {
 async function setup(script: readonly ScriptStep[] = [], locations: readonly Location[] = []) {
   const { deps, repo } = await setupDeps({ locations, trips: [usEastCoast] });
   const llm = scriptedLlm(script);
+  const logs: LogEntry[] = [];
   const bot = createBot(
     "123:test-token",
     {
@@ -41,6 +42,7 @@ async function setup(script: readonly ScriptStep[] = [], locations: readonly Loc
       conversations: memoryConversations(),
       allowedTelegramIds: new Set([you]),
       userIdFor: () => Promise.resolve(user),
+      log: (entry) => logs.push(entry),
     },
     botInfo,
   );
@@ -51,7 +53,7 @@ async function setup(script: readonly ScriptStep[] = [], locations: readonly Loc
   });
   const texts = () =>
     calls.filter((call) => call.method === "sendMessage").map((call) => call.payload.text);
-  return { bot, calls, texts, llm, repo };
+  return { bot, calls, texts, llm, repo, logs };
 }
 
 /** A Telegram update as the Bot API would deliver it, from `from` in their private chat by default. */
@@ -156,9 +158,39 @@ describe("the Telegram bot", () => {
     expect(texts()).toEqual(["I can read text messages and shared locations."]);
   });
 
-  test("if something fails, you get an apology rather than silence", async () => {
-    const { bot, texts } = await setup([]);
-    await expect(bot.handleUpdate(update(you, text("What time is it?")))).rejects.toThrow();
+  test("if something fails, you get an apology, the error is logged, and the bot carries on", async () => {
+    const { bot, texts, logs } = await setup([]);
+    await bot.handleUpdate(update(you, text("What time is it?")));
     expect(texts()).toEqual(["Sorry, something went wrong. Please try again."]);
+    expect(logs).toEqual([
+      { event: "error", userId: user, error: "The script has no reply for model call 1" },
+    ]);
+  });
+});
+
+describe("logs", () => {
+  test("one line per reply: ids, outcome, tokens and time taken, never the text", async () => {
+    const { bot, logs } = await setup([{ text: "I don't know where you are yet." }]);
+    await bot.handleUpdate(update(you, text("What time is it?")));
+    expect(logs).toEqual([
+      {
+        event: "reply",
+        userId: user,
+        outcome: "answered",
+        inputTokens: 100,
+        outputTokens: 10,
+        ms: 0,
+      },
+    ]);
+  });
+
+  test("shared locations are logged without coordinates or place", async () => {
+    const { bot, logs } = await setup();
+    await bot.handleUpdate(update(you, at(41.15, -8.61)));
+    await bot.handleUpdate(update(you, at(40.42, -3.7), { edited: true }));
+    expect(logs).toEqual([
+      { event: "location", userId: user, live: false },
+      { event: "location", userId: user, live: true },
+    ]);
   });
 });

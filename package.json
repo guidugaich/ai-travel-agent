@@ -19,7 +19,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "secrets:check": "secretlint \"**/*\"",
-    "seed": "node apps/telegram-bot/src/seed.ts"
+    "seed": "node apps/telegram-bot/src/seed.ts",
+    "bot": "node --env-file-if-exists=.env apps/telegram-bot/src/main.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
