@@ -9,6 +9,7 @@
   "dependencies": {
     "@ai-travel-agent/agent": "workspace:*",
     "@ai-travel-agent/core": "workspace:*",
+    "@ai-travel-agent/openai-compatible": "workspace:*",
     "@electric-sql/pglite": "0.5.16",
     "geo-tz": "8.1.11",
     "grammy": "1.46.0",

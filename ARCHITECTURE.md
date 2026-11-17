@@ -72,7 +72,7 @@ The arrows show who calls whom at runtime. Code dependencies always point inward
 4. **Only the user confirms a change.** Button taps go from the adapter straight to the core, so nothing the model has read can approve a change. A test arrives in slice 2.
 5. **No code reads the system clock;** a Clock is injected. Enforced by ESLint.
 6. **Times shown to users are computed by code,** never typed by the model. An output check and evals arrive in slice 1.
-7. **Driven adapters live in `apps/telegram-bot`** until a second app needs them.
+7. **Driven adapters live in `apps/telegram-bot`** until a second app needs them. The LLM adapter is already shared, in `packages/openai-compatible`, because the evals use it too.
 
 ## Adding a client
 

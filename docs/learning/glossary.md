@@ -49,6 +49,8 @@ In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with
 
 **Model / LLM.** A large language model, reached as an external HTTP API, like any third-party service. It is _stateless_ and remembers nothing between calls, so every request sends the whole conversation. It has no clock, no database and no internet access unless we provide tools.
 
+**OpenAI-compatible API ("chat completions").** OpenAI's `POST /v1/chat/completions` JSON format, which became the common language for LLM APIs: messages with roles (`system`, `user`, `assistant`, `tool`), tool definitions, and tool calls coming back with their arguments as a JSON-encoded string. Many providers and Ollama accept it, so one adapter reaches them all by changing the base URL, model name and API key. Ours is `packages/openai-compatible`, plain `fetch` and no SDK, so you can see exactly what's sent.
+
 **Prompt.** The body of a request to the model. It has three parts:
 
 - a _system_ part: standing instructions, similar to config;

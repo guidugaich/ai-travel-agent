@@ -33,7 +33,7 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
 - Dependencies point inwards: `apps/*` → `packages/agent` → `packages/core`.
 - Core services speak domain language (`userId`, `tripId`), never channel concepts such as a Telegram chat id. Adapters map identities.
 - Every plan change goes through a core service. Agent tools are thin wrappers over them.
-- Ports are defined by the side that needs them. Driven adapters (database, clock, LLM provider) live in the app until a second app needs them.
+- Ports are defined by the side that needs them. Driven adapters (database, clock) live in the app until a second app needs them. The LLM adapter already has two users, the bot and the evals, so it's a package: `packages/openai-compatible`.
 
 ## Commands
 

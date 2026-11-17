@@ -37,6 +37,7 @@ The app is built in **slices**: small, complete versions you can actually use, e
 packages/
   core/           business logic: domain, time rules, services, ports; no I/O, depends on nothing
   agent/          LLM loop, tools, prompts; provider-agnostic
+  openai-compatible/  LLM adapter for the "chat completions" HTTP format (OpenAI, Ollama, many others)
 apps/
   telegram-bot/   Telegram adapter and the program's entry point
   web/, mobile/   reserved for future clients

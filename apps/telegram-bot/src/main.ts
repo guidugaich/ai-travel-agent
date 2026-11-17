@@ -3,6 +3,7 @@ import { loadConfig } from "./config.ts";
 import { openDatabase } from "./db/database.ts";
 import { postgresConversations } from "./db/postgres-conversations.ts";
 import { postgresRepository, telegramUserId } from "./db/postgres-repository.ts";
+import { openAiCompatible } from "@ai-travel-agent/openai-compatible";
 import { standInLlm } from "./stand-in-llm.ts";
 import { systemClock } from "./system-clock.ts";
 
@@ -17,14 +18,15 @@ async function main(): Promise<number> {
     console.error(config.error);
     return 1;
   }
-  const { token, allowedTelegramIds } = config.value;
+  const { token, allowedTelegramIds, llm } = config.value;
+  const model = llm === null ? "the stand-in model" : `${llm.model} at ${llm.baseUrl}`;
 
   const { db, close } = await openDatabase();
   const bot = createBot(token, {
     clock: systemClock,
     repo: postgresRepository(db),
     conversations: postgresConversations(db),
-    llm: standInLlm,
+    llm: llm === null ? standInLlm : openAiCompatible(llm),
     allowedTelegramIds,
     userIdFor: (telegramId) => telegramUserId(db, telegramId),
     log,
@@ -41,7 +43,7 @@ async function main(): Promise<number> {
       onStart: (me) => {
         const nobody = allowedTelegramIds.size === 0;
         console.log(
-          `@${me.username} is running. Press Ctrl+C to stop.` +
+          `@${me.username} is running with ${model}. Press Ctrl+C to stop.` +
             (nobody ? " Nobody is allowed yet: message the bot to learn your Telegram id." : ""),
         );
       },
