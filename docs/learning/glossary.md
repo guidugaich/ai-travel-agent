@@ -27,6 +27,10 @@ The core never imports an adapter, so technologies can be swapped, new clients c
 
 We use long polling for Telegram: no public address is needed, and it works the same on a laptop and on a server.
 
+**Telegram bot.** A Telegram account controlled by a program through the Bot API, a plain HTTPS JSON API (`POST https://api.telegram.org/bot<token>/sendMessage`). You create one by chatting with BotFather, Telegram's bot for making bots, which gives you a token. The token works like an API key, so it lives in `.env`. Incoming messages arrive as _updates_ that carry the sender's numeric id (personal data) and the text or a shared location. A bot can't message anyone first, and can't read past messages.
+
+**grammY.** A TypeScript library for the Telegram Bot API, used the way Express is used for HTTP. It runs the long-polling loop, has types for the whole API, and routes each update to handlers: `bot.on("message:text", (ctx) => ctx.reply("…"))`. `ctx` is a per-update object, like Express's `req` and `res` together. Tests feed it hand-written updates and capture what it would send, with no network.
+
 **Slice (vertical slice).** A small but complete version of the app that a user can actually use. The next slice adds one capability on top. Think skateboard → scooter → bicycle → car: every step gets you somewhere. The opposite, wheel → axle → body → car, is useless until the end. Each slice builds a little of every layer (Telegram → agent → core → database). See [docs/roadmap.md](../roadmap.md).
 
 **ADR (Architecture Decision Record).** A short, dated file recording one significant decision: the context, the options considered, the choice, and the consequences. A commit message explains one change; an ADR explains one decision that shapes many changes. Once accepted, an ADR is never rewritten. A new ADR supersedes it instead, so the history stays readable. See [docs/adr/](../adr/).

@@ -10,6 +10,8 @@
     "@ai-travel-agent/agent": "workspace:*",
     "@ai-travel-agent/core": "workspace:*",
     "@electric-sql/pglite": "0.5.16",
+    "geo-tz": "8.1.11",
+    "grammy": "1.46.0",
     "temporal-polyfill": "1.0.5",
     "zod": "4.6.7"
   }

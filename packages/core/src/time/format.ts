@@ -85,8 +85,13 @@ export function formatLeaveAssumptions(
   return [travelLine, `at ${destination} ${formatMinutes(bufferMinutes)} before ${departure}`];
 }
 
-/** "America/New_York" → "New York" */
+/** "America/New_York" → "New York"; at sea, "Etc/GMT+3" → "UTC-03:00" */
 export function cityName(zone: string): string {
+  if (zone.startsWith("Etc/")) {
+    // Fixed offset, no daylight saving, so any moment gives it. The name's sign is inverted.
+    const { offset } = Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO(zone);
+    return offset === "+00:00" ? "UTC" : `UTC${offset}`;
+  }
   const last = zone.split("/").at(-1) ?? zone;
   return last.replaceAll("_", " ");
 }

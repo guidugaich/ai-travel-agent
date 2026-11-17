@@ -47,6 +47,10 @@ describe("cityName", () => {
     ["America/New_York", "New York"],
     ["America/Argentina/Buenos_Aires", "Buenos Aires"],
     ["UTC", "UTC"],
+    // At sea: Etc/ zone names have the sign inverted, so Etc/GMT+3 is three hours behind UTC.
+    ["Etc/GMT+3", "UTC-03:00"],
+    ["Etc/GMT-10", "UTC+10:00"],
+    ["Etc/GMT", "UTC"],
   ])("%s → %s", (zone, expected) => {
     expect(cityName(zone)).toBe(expected);
   });

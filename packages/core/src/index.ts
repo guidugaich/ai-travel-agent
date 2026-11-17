@@ -16,4 +16,5 @@ export type { ImportProblem } from "./import-trips.ts";
 export { currentContext, setLocation, timeInZone } from "./location.ts";
 export type { Context, WhereaboutsView, ZoneTime } from "./location.ts";
 export type { Clock, Deps, Repository } from "./ports.ts";
+export { cityName } from "./time/format.ts";
 export type { Result, TimeError, WallTime } from "./time/time.ts";
