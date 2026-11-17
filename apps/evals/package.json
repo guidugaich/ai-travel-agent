@@ -1,0 +1,15 @@
+{
+  "name": "@ai-travel-agent/evals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-travel-agent/agent": "workspace:*",
+    "@ai-travel-agent/core": "workspace:*",
+    "@ai-travel-agent/openai-compatible": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

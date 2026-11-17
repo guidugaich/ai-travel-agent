@@ -39,17 +39,18 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
 
 Node comes from `.nvmrc` (`nvm use`), and pnpm is pinned in `package.json`.
 
-| Command                                      | Purpose                             |
-| -------------------------------------------- | ----------------------------------- |
-| `pnpm check`                                 | Everything CI runs                  |
-| `pnpm format` / `format:check`               | Prettier                            |
-| `pnpm lint`                                  | ESLint (type-aware)                 |
-| `pnpm typecheck`                             | TypeScript, all workspaces          |
-| `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph  |
-| `pnpm test` / `test:watch` / `test:coverage` | Vitest                              |
-| `pnpm secrets:check`                         | secretlint                          |
-| `pnpm seed`                                  | Import `seed.json` into `.data/`    |
-| `pnpm bot`                                   | Run the Telegram bot (reads `.env`) |
+| Command                                      | Purpose                                                        |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `pnpm check`                                 | Everything CI runs                                             |
+| `pnpm format` / `format:check`               | Prettier                                                       |
+| `pnpm lint`                                  | ESLint (type-aware)                                            |
+| `pnpm typecheck`                             | TypeScript, all workspaces                                     |
+| `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph                             |
+| `pnpm test` / `test:watch` / `test:coverage` | Vitest                                                         |
+| `pnpm secrets:check`                         | secretlint                                                     |
+| `pnpm seed`                                  | Import `seed.json` into `.data/`                               |
+| `pnpm bot`                                   | Run the Telegram bot (reads `.env`)                            |
+| `pnpm eval [name]`                           | Score the models in `apps/evals/candidates.json` (costs money) |
 
 ## Conventions
 

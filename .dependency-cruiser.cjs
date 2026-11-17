@@ -45,8 +45,8 @@ module.exports = {
       name: "testing-helpers-only-in-tests",
       severity: "error",
       comment:
-        "Fakes and fixtures in testing/ folders are for tests; production code must never use them.",
-      from: { pathNot: "(\\.test\\.ts$|/testing/)" },
+        "Fakes and fixtures in testing/ folders are for tests and evals; production code must never use them.",
+      from: { pathNot: "(\\.test\\.ts$|/testing/|^apps/evals/)" },
       to: { path: "/src/testing/" },
     },
     {

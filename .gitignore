@@ -14,4 +14,7 @@ coverage/
 .data/
 seed.json
 
+# Eval runs: scorecards and conversations
+apps/evals/results/
+
 .claude/settings.local.json

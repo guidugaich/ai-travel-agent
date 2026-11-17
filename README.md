@@ -40,6 +40,7 @@ packages/
   openai-compatible/  LLM adapter for the "chat completions" HTTP format (OpenAI, Ollama, many others)
 apps/
   telegram-bot/   Telegram adapter and the program's entry point
+  evals/          `pnpm eval`: scores LLMs on the slice's examples
   web/, mobile/   reserved for future clients
 ```
 
@@ -65,18 +66,19 @@ pnpm check     # runs every check CI runs
 
 ## Commands
 
-| Command                                                | What it does                                                         |
-| ------------------------------------------------------ | -------------------------------------------------------------------- |
-| `pnpm check`                                           | Everything below, in the same order as CI                            |
-| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting                             |
-| `pnpm lint`                                            | ESLint with type-aware rules                                         |
-| `pnpm typecheck`                                       | TypeScript in every workspace                                        |
-| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser                   |
-| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid                        |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                                               |
-| `pnpm secrets:check`                                   | Scan the repo for committed secrets                                  |
-| `pnpm seed`                                            | Load `seed.json` into the local database (`.data/`)                  |
-| `pnpm bot`                                             | Run the Telegram bot; settings come from `.env` (see `.env.example`) |
+| Command                                                | What it does                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `pnpm check`                                           | Everything below, in the same order as CI                                                                        |
+| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting                                                                         |
+| `pnpm lint`                                            | ESLint with type-aware rules                                                                                     |
+| `pnpm typecheck`                                       | TypeScript in every workspace                                                                                    |
+| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser                                                               |
+| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid                                                                    |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                                                                                           |
+| `pnpm secrets:check`                                   | Scan the repo for committed secrets                                                                              |
+| `pnpm seed`                                            | Load `seed.json` into the local database (`.data/`)                                                              |
+| `pnpm bot`                                             | Run the Telegram bot; settings come from `.env` (see `.env.example`)                                             |
+| `pnpm eval [name]`                                     | Score the models in `apps/evals/candidates.json` on the slice examples (calls real models, so it can cost money) |
 
 ## Tooling and guardrails
 

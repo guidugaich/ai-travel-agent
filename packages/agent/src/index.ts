@@ -2,6 +2,7 @@ export { handleMessage } from "./agent.ts";
 export type { AgentDeps, AgentReply } from "./agent.ts";
 export { HISTORY_LIMIT } from "./conversation.ts";
 export type { ChatMessage, ConversationStore } from "./conversation.ts";
+export { addUsage, NO_USAGE } from "./llm.ts";
 export type {
   ChatRequest,
   LlmClient,

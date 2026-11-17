@@ -20,7 +20,8 @@
     "test:coverage": "vitest run --coverage",
     "secrets:check": "secretlint \"**/*\"",
     "seed": "node apps/telegram-bot/src/seed.ts",
-    "bot": "node --env-file-if-exists=.env apps/telegram-bot/src/main.ts"
+    "bot": "node --env-file-if-exists=.env apps/telegram-bot/src/main.ts",
+    "eval": "node --env-file-if-exists=.env apps/evals/src/main.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
