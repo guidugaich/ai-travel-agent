@@ -28,7 +28,7 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "set_my_location",
       description:
-        "Records where the user says they are. A location they shared from their phone in the last 3 days takes priority, so check `inEffect` in the result before confirming.",
+        "Call this whenever the user says where they are, even if you already know a location. It records what they said and decides which location applies: one they shared from their phone in the last 3 days takes priority. Check `inEffect` in the result before confirming.",
       input: z.strictObject({
         zone,
         place_name: z.string().min(1).describe("The place as the user named it, such as Kathmandu"),
@@ -41,7 +41,7 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "get_next_event",
       description:
-        'The user\'s next upcoming event, or the next of one kind ("my flight" is kind flight). Gives its id, and its times ready to repeat.',
+        "The user's next upcoming event. Leave `kind` out to get the next event of any kind; set it only when the user names one (\"my flight\" is kind flight). Gives the event's id, and its times ready to repeat.",
       input: z.strictObject({
         kind: z.enum(EVENT_KINDS).exactOptional().describe("Only events of this kind"),
       }),
@@ -59,7 +59,7 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "compute_leave_by",
       description:
-        "When the user should leave for an event. Get event_id from get_next_event or events_on_day. If the result is need_transit_time, ask how long it takes them to get there.",
+        "When the user should leave for an event. It uses the travel time saved in the user's settings, so call it before asking how long it takes them; ask only if the result is need_transit_time. Get event_id from get_next_event or events_on_day.",
       input: z.strictObject({
         event_id: z.string(),
         transit_minutes: z
