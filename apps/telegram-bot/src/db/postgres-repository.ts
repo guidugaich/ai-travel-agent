@@ -12,8 +12,6 @@ import { Temporal } from "temporal-polyfill";
 
 interface UserRow {
   readonly id: string;
-  readonly transit_airport_minutes: number | null;
-  readonly transit_other_minutes: number | null;
 }
 
 interface TripRow {
@@ -32,7 +30,6 @@ interface EventRow {
   readonly start_zone: string;
   readonly end_local: string | null;
   readonly end_zone: string | null;
-  readonly transit_minutes: number | null;
   readonly flight_from: string | null;
   readonly flight_to: string | null;
   readonly flight_international: boolean | null;
@@ -49,23 +46,13 @@ interface LocationRow {
 export function postgresRepository(db: PGlite): Repository {
   return {
     async getUser(userId) {
-      const { rows } = await db.query<UserRow>(
-        "select id, transit_airport_minutes, transit_other_minutes from users where id = $1",
-        [userId],
-      );
+      const { rows } = await db.query<UserRow>("select id from users where id = $1", [userId]);
       const [row] = rows;
       return row === undefined ? null : toUser(row);
     },
 
     async saveUser(user) {
-      await db.query(
-        `insert into users (id, transit_airport_minutes, transit_other_minutes)
-         values ($1, $2, $3)
-         on conflict (id) do update set
-           transit_airport_minutes = excluded.transit_airport_minutes,
-           transit_other_minutes = excluded.transit_other_minutes`,
-        [user.id, user.transitMinutes.airport ?? null, user.transitMinutes.other ?? null],
-      );
+      await db.query("insert into users (id) values ($1) on conflict (id) do nothing", [user.id]);
     },
 
     async getTrips(userId) {
@@ -77,7 +64,7 @@ export function postgresRepository(db: PGlite): Repository {
       );
       const events = await db.query<EventRow>(
         `select e.id, e.trip_id, e.kind, e.title, e.start_local, e.start_zone, e.end_local,
-                e.end_zone, e.transit_minutes, e.flight_from, e.flight_to, e.flight_international
+                e.end_zone, e.flight_from, e.flight_to, e.flight_international
          from events e join trips t on t.id = e.trip_id
          where t.user_id = $1 order by e.position`,
         [userId],
@@ -105,8 +92,8 @@ export function postgresRepository(db: PGlite): Repository {
           for (const [position, event] of trip.events.entries()) {
             await tx.query(
               `insert into events (trip_id, position, kind, title, start_local, start_zone,
-                 end_local, end_zone, transit_minutes, flight_from, flight_to, flight_international)
-               values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                 end_local, end_zone, flight_from, flight_to, flight_international)
+               values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
               [
                 tripId,
                 position,
@@ -116,7 +103,6 @@ export function postgresRepository(db: PGlite): Repository {
                 event.start.zone,
                 event.end?.local ?? null,
                 event.end?.zone ?? null,
-                event.transitMinutes ?? null,
                 event.flight?.from ?? null,
                 event.flight?.to ?? null,
                 event.flight?.international ?? null,
@@ -166,13 +152,7 @@ export async function telegramUserId(db: PGlite, telegramId: number): Promise<Us
 }
 
 function toUser(row: UserRow): User {
-  return {
-    id: row.id,
-    transitMinutes: {
-      ...(row.transit_airport_minutes === null ? {} : { airport: row.transit_airport_minutes }),
-      ...(row.transit_other_minutes === null ? {} : { other: row.transit_other_minutes }),
-    },
-  };
+  return { id: row.id };
 }
 
 function toTrip(row: TripRow, events: readonly EventRow[]): Trip {
@@ -194,7 +174,6 @@ function toEvent(row: EventRow): TripEvent {
     ...(row.end_local === null || row.end_zone === null
       ? {}
       : { end: { local: row.end_local, zone: row.end_zone } }),
-    ...(row.transit_minutes === null ? {} : { transitMinutes: row.transit_minutes }),
     ...(row.flight_from === null || row.flight_to === null || row.flight_international === null
       ? {}
       : {

@@ -5,8 +5,6 @@ export type UserId = string;
 
 export interface User {
   readonly id: UserId;
-  /** Usual travel time to an airport, and to anything else, in minutes. */
-  readonly transitMinutes: { readonly airport?: number; readonly other?: number };
 }
 
 export const EVENT_KINDS = ["flight", "train", "bus", "ferry", "stay", "activity", "call"] as const;
@@ -19,7 +17,6 @@ export interface NewTripEvent {
   readonly start: WallTime;
   /** Required for flights, trains, buses, ferries and stays (checked on import). */
   readonly end?: WallTime;
-  readonly transitMinutes?: number;
   /** Required for flights (checked on import). */
   readonly flight?: {
     readonly from: string;

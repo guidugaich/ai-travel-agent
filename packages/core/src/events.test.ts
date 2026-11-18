@@ -1,11 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { NewTrip, User } from "./domain.ts";
-import { computeLeaveBy, eventsOnDay, getNextEvent } from "./events.ts";
+import type { NewTrip } from "./domain.ts";
+import { beThereBy, eventsOnDay, getNextEvent } from "./events.ts";
 import { sharedLisbon, usEastCoast } from "./testing/fixtures.ts";
 import type { MemoryRepository } from "./testing/memory-repository.ts";
 import { setupDeps, testUser as user } from "./testing/setup.ts";
-
-const withAirportSetting: User = { id: user, transitMinutes: { airport: 30 } };
 
 const tokyoToHonolulu: NewTrip = {
   title: "Pacific",
@@ -150,46 +148,27 @@ describe("eventsOnDay", () => {
   });
 });
 
-describe("computeLeaveBy", () => {
-  test("example 4: leave at 13:35, with the assumptions spelled out", async () => {
-    const { deps, repo } = await setupDeps({
-      user: withAirportSetting,
-      locations: [sharedLisbon],
-      trips: [usEastCoast],
-    });
-    expect(await computeLeaveBy(user, await firstEventId(repo), undefined, deps)).toEqual({
+describe("beThereBy", () => {
+  test("example 4: be at the airport by 14:05, with the rule that gives it", async () => {
+    const { deps, repo } = await setupDeps({ locations: [sharedLisbon], trips: [usEastCoast] });
+    expect(await beThereBy(user, await firstEventId(repo), deps)).toEqual({
       kind: "plan",
       event: "Flight LIS → JFK",
-      leaveAt: {
+      beThereBy: {
         place: "Lisbon",
         zone: "Europe/Lisbon",
-        localTime: "13:35",
+        localTime: "14:05",
         date: "Wed 14 Oct",
         relativeDay: "tomorrow",
       },
-      leaveIn: "1 day, 3 h 23 min",
+      timeUntil: "1 day, 3 h 53 min",
       late: false,
       startsIn: "1 day, 6 h 53 min",
-      assumptions: [
-        "30 min to the airport (your setting)",
-        "at the airport 3 h before an international flight",
-      ],
+      rule: "at the airport 3 h before an international flight",
     });
   });
 
-  test("a travel time you just gave beats your setting", async () => {
-    const { deps, repo } = await setupDeps({
-      user: withAirportSetting,
-      locations: [sharedLisbon],
-      trips: [usEastCoast],
-    });
-    expect(await computeLeaveBy(user, await firstEventId(repo), 45, deps)).toMatchObject({
-      leaveAt: { localTime: "13:20" },
-      assumptions: ["45 min to the airport (you told me)", expect.any(String) as unknown],
-    });
-  });
-
-  test("an event's own travel time beats your setting", async () => {
+  test("a train: at the station 20 min before", async () => {
     const train: NewTrip = {
       title: "Porto",
       startDate: "2026-10-14",
@@ -199,48 +178,39 @@ describe("computeLeaveBy", () => {
           title: "Train to Porto",
           start: { local: "2026-10-14T09:00", zone: "Europe/Lisbon" },
           end: { local: "2026-10-14T11:50", zone: "Europe/Lisbon" },
-          transitMinutes: 15,
         },
       ],
     };
-    const { deps, repo } = await setupDeps({
-      user: { id: user, transitMinutes: { other: 40 } },
-      locations: [sharedLisbon],
-      trips: [train],
-    });
-    expect(await computeLeaveBy(user, await firstEventId(repo), undefined, deps)).toMatchObject({
-      leaveAt: { localTime: "08:25" },
-      assumptions: [
-        "15 min to the station (set for this event)",
-        "at the station 20 min before the train",
-      ],
+    const { deps, repo } = await setupDeps({ locations: [sharedLisbon], trips: [train] });
+    expect(await beThereBy(user, await firstEventId(repo), deps)).toMatchObject({
+      beThereBy: { localTime: "08:40" },
+      rule: "at the station 20 min before the train",
     });
   });
 
-  test("with no travel time anywhere, it asks", async () => {
-    const { deps, repo } = await setupDeps({ locations: [sharedLisbon], trips: [usEastCoast] });
-    expect(await computeLeaveBy(user, await firstEventId(repo), undefined, deps)).toEqual({
-      kind: "need_transit_time",
-      event: "Flight LIS → JFK",
+  test("an activity has no rule: be there when it starts", async () => {
+    const { deps, repo } = await setupDeps({ locations: [sharedLisbon], trips: [dinnerTonight] });
+    expect(await beThereBy(user, await firstEventId(repo), deps)).toMatchObject({
+      beThereBy: { localTime: "20:00", relativeDay: "today" },
+      rule: null,
     });
   });
 
   test("already late: says by how much", async () => {
     const { deps, repo } = await setupDeps({
-      now: "2026-10-14T13:00:00Z",
-      user: withAirportSetting,
+      now: "2026-10-14T13:30:00Z",
       locations: [sharedLisbon],
       trips: [usEastCoast],
     });
-    expect(await computeLeaveBy(user, await firstEventId(repo), undefined, deps)).toMatchObject({
+    expect(await beThereBy(user, await firstEventId(repo), deps)).toMatchObject({
       late: true,
-      leaveIn: "25 min",
-      startsIn: "3 h 5 min",
+      timeUntil: "25 min",
+      startsIn: "2 h 35 min",
     });
   });
 
   test("an unknown event", async () => {
     const { deps } = await setupDeps({ trips: [usEastCoast] });
-    expect(await computeLeaveBy(user, "nope", undefined, deps)).toEqual({ kind: "not_found" });
+    expect(await beThereBy(user, "nope", deps)).toEqual({ kind: "not_found" });
   });
 });

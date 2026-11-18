@@ -9,7 +9,7 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 - Ask "what time is it?" or "what time is it in Tokyo?" and get the right answer, with the timezone named.
 - Tap **Share my location**, or say where you are ("I'm in Lisbon"). A location you shared in the last 3 days takes priority over what you say. If you haven't told it anything, it uses where your trip says you should be, and says so. If it can't tell, it asks.
 - Ask "when is my next event?" about a trip loaded from a seed file. The answer shows the event's local time, your local time, and how long until then.
-- Ask "when do I need to leave for it?" and get a time with its assumptions spelled out ("45 min to the airport + 3 h before an international flight").
+- Ask "when do I need to leave for it?" and get when to be at the airport, with the rule it used ("3 h before an international flight"). Travel time is never guessed.
 
 **What gets built:**
 
@@ -55,7 +55,7 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 
 ## Slice 4: Personalization
 
-**After this slice you can:** tell the agent your preferences once. It uses them in suggestions, and "what do you know about me?" shows them so you can edit or delete them. A travel time you mention in chat ("45 minutes to the airport") can update your settings, instead of being forgotten after 20 messages.
+**After this slice you can:** tell the agent your preferences once. It uses them in suggestions, and "what do you know about me?" shows them so you can edit or delete them.
 
 **Done when:** only preferences you stated are stored; viewing, editing and deleting them all work.
 

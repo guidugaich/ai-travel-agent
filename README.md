@@ -17,7 +17,7 @@ The same principle covers other facts that change, such as prices, availability 
 
 ## Current state
 
-The core is built (time rules, where you are, your trip's events and leave-by times), and so is storage (Postgres, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a stand-in model; real models come next.
+The core is built (time rules, where you are, your trip's events and when to be at the airport), and so is storage (Postgres, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a stand-in model; real models come next.
 
 The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 

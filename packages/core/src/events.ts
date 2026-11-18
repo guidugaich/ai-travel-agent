@@ -1,5 +1,5 @@
 import { Temporal } from "temporal-polyfill";
-import type { EventKind, TripEvent, User, UserId } from "./domain.ts";
+import type { EventKind, TripEvent, UserId } from "./domain.ts";
 import { locate } from "./location.ts";
 import type { Deps } from "./ports.ts";
 import { relativeDayLabel, resolveDay, type RelativeDay } from "./time/days.ts";
@@ -7,11 +7,10 @@ import {
   cityName,
   formatClock,
   formatDate,
+  formatBufferRule,
   formatDuration,
-  formatLeaveAssumptions,
-  type TravelTimeSource,
 } from "./time/format.ts";
-import { leaveBy } from "./time/leave-by.ts";
+import { beThereBy as planBeThereBy } from "./time/be-there-by.ts";
 import { elapsed, zonedOrThrow } from "./time/time.ts";
 import { userToday, userZone } from "./whereabouts.ts";
 
@@ -46,18 +45,18 @@ export type DayEvents =
   | { readonly kind: "unrecognized"; readonly phrase: string }
   | { readonly kind: "unknown_location" };
 
-export type LeaveByAnswer =
+export type BeThereByAnswer =
   | {
       readonly kind: "plan";
       readonly event: string;
-      readonly leaveAt: EventTime;
-      /** Time until leaving or, when `late`, how late. */
-      readonly leaveIn: string;
+      readonly beThereBy: EventTime;
+      /** Time until then or, when `late`, how late. */
+      readonly timeUntil: string;
       readonly late: boolean;
       readonly startsIn: string | null;
-      readonly assumptions: readonly string[];
+      /** "at the airport 3 h before an international flight", or null for events with no rule. */
+      readonly rule: string | null;
     }
-  | { readonly kind: "need_transit_time"; readonly event: string }
   | { readonly kind: "not_found" };
 
 interface Scheduled {
@@ -108,33 +107,26 @@ export async function eventsOnDay(userId: UserId, day: string, deps: Deps): Prom
   }
 }
 
-/** When to leave for an event. `transitMinutes` is a travel time the user just gave, if any. */
-export async function computeLeaveBy(
+/** When to be at an event: its start minus a rule per event type. Travel time is never guessed. */
+export async function beThereBy(
   userId: UserId,
   eventId: string,
-  transitMinutes: number | undefined,
   deps: Deps,
-): Promise<LeaveByAnswer> {
-  const [{ now, today, schedule }, user] = await Promise.all([
-    load(userId, deps),
-    deps.repo.getUser(userId),
-  ]);
+): Promise<BeThereByAnswer> {
+  const { now, today, schedule } = await load(userId, deps);
   const found = schedule.find(({ event }) => event.id === eventId);
   if (found === undefined) return { kind: "not_found" };
 
   const { event, start } = found;
-  const travel = travelTime(event, transitMinutes, user);
-  if (travel === null) return { kind: "need_transit_time", event: event.title };
-
-  const plan = leaveBy({ ...event, start: start.toInstant() }, travel.minutes, now);
+  const plan = planBeThereBy({ ...event, start: start.toInstant() }, now);
   return {
     kind: "plan",
     event: event.title,
-    leaveAt: eventTime(plan.leaveAt.toZonedDateTimeISO(start.timeZoneId), today),
-    leaveIn: formatDuration(plan.leaveIn),
+    beThereBy: eventTime(plan.at.toZonedDateTimeISO(start.timeZoneId), today),
+    timeUntil: formatDuration(plan.until),
     late: plan.late,
     startsIn: startsIn(start, now),
-    assumptions: formatLeaveAssumptions(event, travel, plan.bufferMinutes),
+    rule: formatBufferRule(event, plan.bufferMinutes),
   };
 }
 
@@ -147,18 +139,6 @@ async function load(userId: UserId, deps: Deps) {
     .map((event) => ({ event, start: zonedOrThrow(event.start) }))
     .sort((a, b) => Temporal.ZonedDateTime.compare(a.start, b.start));
   return { now, whereabouts, today: userToday(whereabouts, now), schedule };
-}
-
-function travelTime(
-  event: TripEvent,
-  given: number | undefined,
-  user: User | null,
-): { readonly minutes: number; readonly source: TravelTimeSource } | null {
-  if (given !== undefined) return { minutes: given, source: "you_told_me" };
-  if (event.transitMinutes !== undefined) return { minutes: event.transitMinutes, source: "event" };
-  const setting =
-    event.kind === "flight" ? user?.transitMinutes.airport : user?.transitMinutes.other;
-  return setting === undefined ? null : { minutes: setting, source: "setting" };
 }
 
 function view({ event, start }: Scheduled, now: Temporal.Instant, today: Temporal.PlainDate) {

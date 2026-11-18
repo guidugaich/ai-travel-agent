@@ -25,7 +25,6 @@ const usEastCoast: NewTrip = {
       title: "Hotel in Brooklyn",
       start: { local: "2026-10-14T21:00", zone: "America/New_York" },
       end: { local: "2026-10-18T11:00", zone: "America/New_York" },
-      transitMinutes: 40,
     },
   ],
 };
@@ -68,7 +67,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await db.exec("truncate users cascade");
-  await repo.saveUser({ id: you, transitMinutes: {} });
+  await repo.saveUser({ id: you });
 });
 
 afterAll(async () => {
@@ -80,18 +79,16 @@ describe("users", () => {
     expect(await repo.getUser(someoneElse)).toBeNull();
   });
 
-  test("a saved user comes back with their travel-time settings", async () => {
-    await repo.saveUser({ id: you, transitMinutes: { airport: 30, other: 20 } });
-    expect(await repo.getUser(you)).toStrictEqual({
-      id: you,
-      transitMinutes: { airport: 30, other: 20 },
-    });
+  test("a saved user comes back", async () => {
+    expect(await repo.getUser(you)).toStrictEqual({ id: you });
   });
 
-  test("saving again replaces the settings, and a missing one stays missing", async () => {
-    await repo.saveUser({ id: you, transitMinutes: { airport: 30, other: 20 } });
-    await repo.saveUser({ id: you, transitMinutes: { airport: 45 } });
-    expect(await repo.getUser(you)).toStrictEqual({ id: you, transitMinutes: { airport: 45 } });
+  test("no travel times are stored: migration 003 removed those columns", async () => {
+    const { rows } = await db.query<{ column_name: string }>(
+      `select column_name from information_schema.columns
+       where table_name in ('users', 'events') and column_name like 'transit%'`,
+    );
+    expect(rows).toEqual([]);
   });
 });
 
@@ -128,7 +125,7 @@ describe("trips", () => {
   });
 
   test("each user sees only their own trips", async () => {
-    await repo.saveUser({ id: someoneElse, transitMinutes: {} });
+    await repo.saveUser({ id: someoneElse });
     await repo.replaceTrips(you, [usEastCoast]);
     await repo.replaceTrips(someoneElse, [porto]);
     expect(await repo.getTrips(you)).toStrictEqual(withIds([usEastCoast]));

@@ -18,7 +18,7 @@ describe("buildPreamble", () => {
     expect(preamble).toContain('"now": "2026-10-13T09:12:00Z"');
     expect(preamble).toContain('"place": "Lisbon"');
     expect(preamble).toContain('"localTime": "10:12"');
-    expect(preamble).toContain('"basis": "shared_location"');
+    expect(preamble).toContain('"basedOn": "based on your shared location"');
   });
 
   test("an unknown location is stated, so the model asks (example 7)", async () => {

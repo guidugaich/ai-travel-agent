@@ -1,5 +1,5 @@
 {
-  "user": { "telegramId": 123456789, "transitMinutes": { "airport": 30, "other": 20 } },
+  "user": { "telegramId": 123456789 },
   "trips": [
     {
       "title": "US East Coast",
@@ -17,8 +17,7 @@
           "kind": "stay",
           "title": "Hotel in Brooklyn",
           "start": { "local": "2026-10-14T21:00", "zone": "America/New_York" },
-          "end": { "local": "2026-10-18T11:00", "zone": "America/New_York" },
-          "transitMinutes": 40
+          "end": { "local": "2026-10-18T11:00", "zone": "America/New_York" }
         }
       ]
     }

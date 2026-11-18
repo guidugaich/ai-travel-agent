@@ -31,7 +31,6 @@ async function setup(
   options: { now?: string; locations?: readonly Location[]; trips?: readonly NewTrip[] } = {},
 ) {
   const { deps } = await setupDeps({
-    user: { id: user, transitMinutes: { airport: 30 } },
     locations: [sharedLisbon],
     trips: [usEastCoast],
     ...options,
@@ -80,13 +79,13 @@ describe("the spec's examples, each with a reply the output check accepts", () =
     const { ask, llm } = await setup([
       call("get_next_event", { kind: "any" }),
       (request) =>
-        call("compute_leave_by", { event_id: (lastToolResult(request) as { id: string }).id }),
+        call("be_there_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {
-        text: "Leave at 13:35 tomorrow, in 1 day, 3 h 23 min. That allows 30 min to the airport and 3 h before an international flight.",
+        text: "Be at the airport by 14:05 tomorrow, in 1 day, 3 h 53 min: at the airport 3 h before an international flight.",
       },
     ]);
     expect(await ask("When do I need to leave for it?")).toMatchObject({ outcome: "answered" });
-    expect(toolResults(llm).at(-1)).toContain('"localTime":"13:35"');
+    expect(toolResults(llm).at(-1)).toContain('"localTime":"14:05"');
   });
 
   test("5: what you say doesn't override yesterday's shared location", async () => {

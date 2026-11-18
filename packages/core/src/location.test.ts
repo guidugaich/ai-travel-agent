@@ -15,20 +15,11 @@ describe("currentContext", () => {
         zone: "Europe/Lisbon",
         localTime: "10:12",
         localDate: "Tue 13 Oct",
-        basis: "shared_location",
+        basedOn: "based on your shared location",
         confidence: "high",
       },
       activeTrip: null,
       nextTrip: { title: "US East Coast", startDate: "Wed 14 Oct", relativeDay: "tomorrow" },
-      savedTravelTimes: { toAirport: null, toOtherPlaces: null },
-    });
-  });
-
-  test("your saved travel times are shown, so the model knows leave-by can use them", async () => {
-    const { deps } = await setup({ user: { id: user, transitMinutes: { airport: 30 } } });
-    expect((await currentContext(user, deps)).savedTravelTimes).toEqual({
-      toAirport: "30 min",
-      toOtherPlaces: null,
     });
   });
 
@@ -54,7 +45,7 @@ describe("currentContext", () => {
         kind: "known",
         place: "New York",
         localTime: "10:00",
-        basis: "trip",
+        basedOn: "based on your trip",
         confidence: "medium",
       },
       activeTrip: "US East Coast",
@@ -129,7 +120,7 @@ describe("setLocation", () => {
           zone: "Asia/Kathmandu",
           localTime: "14:57",
           localDate: "Tue 13 Oct",
-          basis: "user_said",
+          basedOn: "based on what you said",
           confidence: "medium",
         },
       },

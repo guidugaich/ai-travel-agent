@@ -1,5 +1,5 @@
 import {
-  computeLeaveBy,
+  beThereBy,
   EVENT_KINDS,
   eventsOnDay,
   getNextEvent,
@@ -63,21 +63,11 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
       run: async ({ day }) => ({ ok: true, value: await eventsOnDay(userId, day, deps) }),
     }),
     defineTool({
-      name: "compute_leave_by",
+      name: "be_there_by",
       description:
-        "When the user should leave for an event. It uses the travel time saved in the user's settings, so call it before asking how long it takes them; ask only if the result is need_transit_time. Get event_id from get_next_event or events_on_day.",
-      input: z.strictObject({
-        event_id: z.string(),
-        transit_minutes: z
-          .int()
-          .nonnegative()
-          .exactOptional()
-          .describe("Only if the user just said how long it takes them to get there"),
-      }),
-      run: async ({ event_id, transit_minutes }) => ({
-        ok: true,
-        value: await computeLeaveBy(userId, event_id, transit_minutes, deps),
-      }),
+        "When the user should be at the airport, station or port for an event: its start minus a rule per event type. Give the time together with its rule, as written. You can't know how long it takes the user to get there, so never estimate a travel time or a time to leave home. Get event_id from get_next_event or events_on_day.",
+      input: z.strictObject({ event_id: z.string() }),
+      run: async ({ event_id }) => ({ ok: true, value: await beThereBy(userId, event_id, deps) }),
     }),
   ];
 }

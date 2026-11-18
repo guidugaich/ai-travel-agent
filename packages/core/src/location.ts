@@ -2,7 +2,7 @@ import { Temporal } from "temporal-polyfill";
 import type { Location, Trip, UserId } from "./domain.ts";
 import type { Deps } from "./ports.ts";
 import { relativeDayLabel, type RelativeDay } from "./time/days.ts";
-import { cityName, formatClock, formatDate, formatDuration } from "./time/format.ts";
+import { cityName, formatBasis, formatClock, formatDate } from "./time/format.ts";
 import { zonedAt, type Result, type TimeError } from "./time/time.ts";
 import { resolveWhereabouts, userToday, type Whereabouts } from "./whereabouts.ts";
 
@@ -25,7 +25,8 @@ export type WhereaboutsView =
       readonly zone: string;
       readonly localTime: string;
       readonly localDate: string;
-      readonly basis: "shared_location" | "user_said" | "trip";
+      /** Ready to say, such as "based on what you said". */
+      readonly basedOn: string;
       readonly confidence: "high" | "medium";
     }
   | {
@@ -47,29 +48,17 @@ export interface Context {
     readonly startDate: string;
     readonly relativeDay: RelativeDay | null;
   } | null;
-  /** The user's usual travel times, which leave-by uses when they don't give one. */
-  readonly savedTravelTimes: {
-    readonly toAirport: string | null;
-    readonly toOtherPlaces: string | null;
-  };
 }
 
 export async function currentContext(userId: UserId, deps: Deps): Promise<Context> {
   const now = deps.clock.now();
-  const [{ whereabouts, trips }, user] = await Promise.all([
-    locate(userId, now, deps),
-    deps.repo.getUser(userId),
-  ]);
+  const { whereabouts, trips } = await locate(userId, now, deps);
   const today = userToday(whereabouts, now);
   return {
     now: now.toString(),
     whereabouts: describe(whereabouts, now),
     activeTrip: activeTrip(trips, today),
     nextTrip: nextTrip(trips, today),
-    savedTravelTimes: {
-      toAirport: minutes(user?.transitMinutes.airport),
-      toOtherPlaces: minutes(user?.transitMinutes.other),
-    },
   };
 }
 
@@ -126,7 +115,7 @@ function describe(whereabouts: Whereabouts, now: Temporal.Instant): WhereaboutsV
         zone: whereabouts.zone,
         localTime: formatClock(local),
         localDate: formatDate(local.toPlainDate(), local.toPlainDate()),
-        basis: whereabouts.basis,
+        basedOn: formatBasis(whereabouts.basis),
         confidence: whereabouts.confidence,
       };
     }
@@ -144,10 +133,6 @@ function describe(whereabouts: Whereabouts, now: Temporal.Instant): WhereaboutsV
 
 function placeTime(zone: string, now: Temporal.Instant): PlaceTime {
   return { place: cityName(zone), zone, localTime: formatClock(now.toZonedDateTimeISO(zone)) };
-}
-
-function minutes(value: number | undefined): string | null {
-  return value === undefined ? null : formatDuration(Temporal.Duration.from({ minutes: value }));
 }
 
 function nextTrip(trips: readonly Trip[], today: Temporal.PlainDate): Context["nextTrip"] {

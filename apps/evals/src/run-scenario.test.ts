@@ -36,9 +36,9 @@ describe("runScenario", () => {
     const llm = scriptedLlm([
       call("get_next_event", { kind: "any" }),
       (request) =>
-        call("compute_leave_by", { event_id: (lastToolResult(request) as { id: string }).id }),
+        call("be_there_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {
-        text: "Leave at 13:35 tomorrow, in 1 day, 3 h 23 min: 30 min to the airport and 3 h before an international flight.",
+        text: "Be at the airport by 14:05 tomorrow, in 1 day, 3 h 53 min: at the airport 3 h before an international flight.",
       },
     ]);
     const run = await runScenario(scenario(4), llm);

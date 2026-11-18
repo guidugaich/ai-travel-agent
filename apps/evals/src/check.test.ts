@@ -2,15 +2,15 @@ import { describe, expect, test } from "vitest";
 import { checkRun, type Expectations } from "./check.ts";
 
 const leaveBy: Expectations = {
-  tools: ["compute_leave_by"],
-  contains: ["13:35", "1 day, 3 h 23 min"],
-  excludes: [/1:35 pm/i],
+  tools: ["be_there_by"],
+  contains: ["14:05", "1 day, 3 h 53 min"],
+  excludes: [/2:05 pm/i],
 };
 
 const good = {
-  reply: "Leave at 13:35 tomorrow, in 1 day, 3 h 23 min.",
+  reply: "Be there by 14:05 tomorrow, in 1 day, 3 h 53 min.",
   outcome: "answered",
-  toolsCalled: ["get_next_event", "compute_leave_by"],
+  toolsCalled: ["get_next_event", "be_there_by"],
 } as const;
 
 describe("checkRun", () => {
@@ -25,16 +25,16 @@ describe("checkRun", () => {
   test("each problem is named", () => {
     expect(
       checkRun(leaveBy, {
-        reply: "Leave at 1:35 pm.",
+        reply: "Be there by 2:05 pm.",
         outcome: "fallback",
         toolsCalled: ["get_next_event"],
       }),
     ).toEqual([
       "outcome: fallback",
-      "didn't call compute_leave_by",
-      'missing "13:35"',
-      'missing "1 day, 3 h 23 min"',
-      "shouldn't match /1:35 pm/i",
+      "didn't call be_there_by",
+      'missing "14:05"',
+      'missing "1 day, 3 h 53 min"',
+      "shouldn't match /2:05 pm/i",
     ]);
   });
 

@@ -12,16 +12,11 @@ import { openDatabase } from "./db/database.ts";
 import { postgresRepository, telegramUserId } from "./db/postgres-repository.ts";
 
 const wallTime = z.strictObject({ local: z.string(), zone: z.string() });
-const minutes = z.int().nonnegative();
 
 // Strict objects: a misspelt optional field would otherwise be dropped without a word.
 const seedFile = z.strictObject({
   user: z.strictObject({
     telegramId: z.int().positive(),
-    transitMinutes: z.strictObject({
-      airport: minutes.exactOptional(),
-      other: minutes.exactOptional(),
-    }),
   }),
   trips: z.array(
     z.strictObject({
@@ -34,7 +29,6 @@ const seedFile = z.strictObject({
           title: z.string().min(1),
           start: wallTime,
           end: wallTime.exactOptional(),
-          transitMinutes: minutes.exactOptional(),
           flight: z
             .strictObject({ from: z.string(), to: z.string(), international: z.boolean() })
             .exactOptional(),
@@ -44,7 +38,7 @@ const seedFile = z.strictObject({
   ),
 });
 
-/** Replaces the Telegram user's trips and settings with the file's, or changes nothing. */
+/** Replaces the Telegram user's trips with the file's, or changes nothing. */
 export async function seed(
   db: PGlite,
   file: unknown,
@@ -53,13 +47,9 @@ export async function seed(
   if (!parsed.success) return { ok: false, error: [z.prettifyError(parsed.error)] };
 
   const { user, trips } = parsed.data;
-  const repo = postgresRepository(db);
   const userId = await telegramUserId(db, user.telegramId);
-  const imported = await importTrips(userId, trips, { repo });
-  if (!imported.ok) return { ok: false, error: imported.error.map(describeProblem) };
-
-  await repo.saveUser({ id: userId, transitMinutes: user.transitMinutes });
-  return imported;
+  const imported = await importTrips(userId, trips, { repo: postgresRepository(db) });
+  return imported.ok ? imported : { ok: false, error: imported.error.map(describeProblem) };
 }
 
 function describeProblem(problem: ImportProblem): string {

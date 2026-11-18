@@ -8,12 +8,11 @@ import {
 import { describe, expect, test } from "vitest";
 import { createTools } from "./tools.ts";
 
-/** The spec's default setup: you shared Lisbon yesterday, a flight tomorrow, 30 min to the airport. */
+/** The spec's default setup: you shared Lisbon yesterday, and a flight tomorrow. */
 async function setup(
   options: { now?: string; locations?: readonly Location[]; trips?: readonly NewTrip[] } = {},
 ) {
   const { deps } = await setupDeps({
-    user: { id: user, transitMinutes: { airport: 30 } },
     locations: [sharedLisbon],
     trips: [usEastCoast],
     ...options,
@@ -37,7 +36,7 @@ describe("the tools the model sees", () => {
       "set_my_location",
       "get_next_event",
       "events_on_day",
-      "compute_leave_by",
+      "be_there_by",
     ]);
     expect(tools.every((tool) => tool.definition.description.length > 20)).toBe(true);
     expect(tools[2]?.definition.parameters).toMatchObject({
@@ -59,9 +58,9 @@ describe("the tools the model sees", () => {
 
   test("arguments that don't match are refused, saying what's wrong", async () => {
     const { call } = await setup();
-    const result = await call("compute_leave_by", { transit_minutes: -5 });
+    const result = await call("be_there_by", { event_id: 42 });
     expect(result.ok).toBe(false);
-    expect(result.ok ? "" : result.error).toMatch(/event_id[\s\S]*transit_minutes/);
+    expect(result.ok ? "" : result.error).toContain("event_id");
   });
 });
 
@@ -88,7 +87,7 @@ describe("each tool calls its core service", () => {
       await call("set_my_location", { zone: "Asia/Kathmandu", place_name: "Kathmandu" }),
     ).toMatchObject({
       ok: true,
-      value: { inEffect: true, current: { place: "Kathmandu", basis: "user_said" } },
+      value: { inEffect: true, current: { place: "Kathmandu", basedOn: "based on what you said" } },
     });
   });
 
@@ -127,14 +126,19 @@ describe("each tool calls its core service", () => {
     });
   });
 
-  test("compute_leave_by, with the id from get_next_event (example 4)", async () => {
+  test("be_there_by, with the id from get_next_event (example 4)", async () => {
     const { call } = await setup();
     const next = await call("get_next_event", { kind: "any" });
     const { id } = (next.ok ? next.value : {}) as { id?: string };
 
-    expect(await call("compute_leave_by", { event_id: id })).toMatchObject({
+    expect(await call("be_there_by", { event_id: id })).toMatchObject({
       ok: true,
-      value: { kind: "plan", leaveAt: { localTime: "13:35" }, leaveIn: "1 day, 3 h 23 min" },
+      value: {
+        kind: "plan",
+        beThereBy: { localTime: "14:05" },
+        timeUntil: "1 day, 3 h 53 min",
+        rule: "at the airport 3 h before an international flight",
+      },
     });
   });
 });

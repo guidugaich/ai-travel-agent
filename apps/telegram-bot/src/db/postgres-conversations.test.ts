@@ -21,8 +21,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   await db.exec("truncate users cascade");
   const repo = postgresRepository(db);
-  await repo.saveUser({ id: you, transitMinutes: {} });
-  await repo.saveUser({ id: someoneElse, transitMinutes: {} });
+  await repo.saveUser({ id: you });
+  await repo.saveUser({ id: someoneElse });
 });
 
 afterAll(async () => {

@@ -1,5 +1,16 @@
 import { Temporal } from "temporal-polyfill";
-import type { EventKind } from "../domain.ts";
+import type { EventKind, Location } from "../domain.ts";
+
+const BASES: Record<Location["source"] | "trip", string> = {
+  shared_location: "based on your shared location",
+  user_said: "based on what you said",
+  trip: "based on your trip",
+};
+
+/** "based on what you said": where a location comes from, ready to say. */
+export function formatBasis(basis: Location["source"] | "trip"): string {
+  return BASES[basis];
+}
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const MONTHS = [
@@ -18,15 +29,6 @@ const MONTHS = [
 ] as const;
 
 const MINUTES_PER_DAY = 24 * 60;
-
-/** Where a travel time came from: given in this conversation, stored on the event, or the user's setting. */
-export type TravelTimeSource = "you_told_me" | "event" | "setting";
-
-const SOURCES: Record<TravelTimeSource, string> = {
-  you_told_me: "you told me",
-  event: "set for this event",
-  setting: "your setting",
-};
 
 const DESTINATIONS: Record<EventKind, string | null> = {
   flight: "the airport",
@@ -65,16 +67,13 @@ export function formatDuration(duration: Temporal.Duration): string {
   return clock === "" ? dayPart : `${dayPart}, ${clock}`;
 }
 
-/** "30 min to the airport (your setting)", "at the airport 3 h before an international flight" */
-export function formatLeaveAssumptions(
+/** "at the airport 3 h before an international flight", or null when there's no rule (an activity). */
+export function formatBufferRule(
   event: { readonly kind: EventKind; readonly flight?: { readonly international: boolean } },
-  travel: { readonly minutes: number; readonly source: TravelTimeSource },
   bufferMinutes: number,
-): string[] {
+): string | null {
   const destination = DESTINATIONS[event.kind];
-  const way = destination === null ? "to get there" : `to ${destination}`;
-  const travelLine = `${formatMinutes(travel.minutes)} ${way} (${SOURCES[travel.source]})`;
-  if (destination === null || bufferMinutes === 0) return [travelLine];
+  if (destination === null || bufferMinutes === 0) return null;
 
   const departure =
     event.kind !== "flight"
@@ -82,7 +81,7 @@ export function formatLeaveAssumptions(
       : event.flight?.international === true
         ? "an international flight"
         : "a domestic flight";
-  return [travelLine, `at ${destination} ${formatMinutes(bufferMinutes)} before ${departure}`];
+  return `at ${destination} ${formatMinutes(bufferMinutes)} before ${departure}`;
 }
 
 /** "America/New_York" → "New York"; at sea, "Etc/GMT+3" → "UTC-03:00" */

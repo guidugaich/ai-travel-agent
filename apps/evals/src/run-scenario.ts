@@ -28,8 +28,8 @@ export interface RunResult {
   readonly transcript: readonly Message[];
 }
 
-/** The spec's default user: 30 minutes to the airport. */
-const user: User = { id: testUser, transitMinutes: { airport: 30 } };
+/** The spec's default user. */
+const user: User = { id: testUser };
 
 // eslint-disable-next-line no-restricted-properties -- measures latency only; each world has a fixed clock
 const wallClockMs = () => performance.now();

@@ -50,7 +50,7 @@ export const SCENARIOS: readonly Scenario[] = [
     expect: {
       tools: ["get_next_event"],
       // The essentials: which day and when it leaves. "tomorrow", the arrival and durations are welcome extras.
-      contains: ["Wed 14 Oct", "17:05"],
+      contains: ["14 Oct", "17:05"],
     },
   },
   {
@@ -65,8 +65,10 @@ export const SCENARIOS: readonly Scenario[] = [
     ],
     message: "When do I need to leave for it?",
     expect: {
-      tools: ["compute_leave_by"],
-      contains: ["13:35", "30 min", "3 h"],
+      tools: ["be_there_by"],
+      contains: ["14:05", "3 h"],
+      // The app never knows travel time, so the reply must not claim one, such as "30 min to the airport".
+      excludes: [/\d+\s*(?:min|minutes?|h|hours?)\s+to (?:get to |reach )?the airport/i],
     },
   },
   {
@@ -80,7 +82,7 @@ export const SCENARIOS: readonly Scenario[] = [
     message: "What's on tomorrow?",
     expect: {
       tools: ["events_on_day"],
-      contains: ["Wed 14 Oct", "Thu 15 Oct"],
+      contains: ["14 Oct", "15 Oct"],
       excludes: [/17:05/],
     },
   },
@@ -106,7 +108,7 @@ export const SCENARIOS: readonly Scenario[] = [
     name: "10: when does my flight land?",
     world: { trips: [tokyoToHonolulu] },
     message: "When does my flight land?",
-    expect: { tools: ["get_next_event"], contains: ["Mon 2 Nov", "09:00", "Honolulu"] },
+    expect: { tools: ["get_next_event"], contains: ["2 Nov", "09:00", "Honolulu"] },
   },
   {
     name: "11: saying a place with no recent share",

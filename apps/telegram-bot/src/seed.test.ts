@@ -16,7 +16,7 @@ const flight = {
 };
 
 const valid = {
-  user: { telegramId, transitMinutes: { airport: 30 } },
+  user: { telegramId },
   trips: [
     { title: "US East Coast", startDate: "2026-10-14", endDate: "2026-10-28", events: [flight] },
   ],
@@ -45,10 +45,9 @@ async function stored() {
 }
 
 describe("seed", () => {
-  test("imports your trips and travel-time settings, for your Telegram id", async () => {
+  test("imports your trips, for your Telegram id", async () => {
     expect(await seed(db, valid)).toEqual({ ok: true, value: { trips: 1, events: 1 } });
-    const { user, trips } = await stored();
-    expect(user?.transitMinutes).toStrictEqual({ airport: 30 });
+    const { trips } = await stored();
     expect(trips.map((trip) => trip.title)).toEqual(["US East Coast"]);
   });
 
@@ -65,7 +64,7 @@ describe("seed", () => {
   test("a time that doesn't exist is refused by name, and nothing changes", async () => {
     await seed(db, valid);
     const springForward = {
-      user: { telegramId, transitMinutes: { airport: 45 } },
+      user: { telegramId },
       trips: [
         {
           ...valid.trips[0],
@@ -80,17 +79,16 @@ describe("seed", () => {
         "event 'Flight LIS → JFK', start: 2027-03-28T01:30 doesn't exist in Europe/Lisbon (clocks jump forward)",
       ],
     });
-    const { user, trips } = await stored();
-    expect(user?.transitMinutes).toStrictEqual({ airport: 30 });
+    const { trips } = await stored();
     expect(trips[0]?.events[0]?.start.local).toBe("2026-10-14T17:05");
   });
 
   test("a misspelt field is refused, saying where it is", async () => {
-    const typo = { ...valid, user: { telegramId, transitMinutes: { airprot: 30 } } };
+    const typo = { ...valid, trips: [{ ...valid.trips[0], startdate: "2026-10-14" }] };
     const result = await seed(db, typo);
     expect(result.ok).toBe(false);
     expect(result.ok ? "" : result.error.join("\n")).toMatch(
-      /Unrecognized key: "airprot"[\s\S]*user\.transitMinutes/,
+      /Unrecognized key: "startdate"[\s\S]*trips\[0\]/,
     );
   });
 

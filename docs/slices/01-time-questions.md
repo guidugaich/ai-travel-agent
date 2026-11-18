@@ -9,7 +9,7 @@ In Telegram, with a trip loaded from a seed file:
 - Ask "what time is it?" or "what time is it in Kathmandu?"
 - Tap **Share my location** (the most reliable way), or say where you are ("I'm in Lisbon"). What you say only counts when you haven't shared a location in the last 3 days, or your trip has moved you since.
 - Ask "when is my next event?" or "what's on tomorrow?"
-- Ask "when do I need to leave for it?" and get a time with its assumptions.
+- Ask "when do I need to leave for it?" and get when to be at the airport (or station, or port), with the rule it used. How long it takes you to get there is never guessed.
 
 Out of scope:
 
@@ -28,7 +28,6 @@ These are the acceptance tests. Every value was computed with the time library c
 
 - **Now:** `2026-10-13T09:12:00Z` (Tue 13 Oct, 10:12 in Lisbon).
 - **Your location:** you shared your location in Lisbon on 12 Oct.
-- **Your settings:** 30 min to the airport.
 - **Your trip, "US East Coast":** flight LIS → JFK, departing Wed 14 Oct 17:05 `Europe/Lisbon` and arriving 19:40 `America/New_York`, marked international. Only examples 3, 4, 6, 8, 9 and 10 use a trip. Examples 1, 2, 5, 7 and 11 need only the clock and your location.
 
 | #   | You say                                                                                                                  | The bot must                                                                                             | Values the reply must contain                                                                             |
@@ -36,7 +35,7 @@ These are the acceptance tests. Every value was computed with the time library c
 | 1   | What time is it?                                                                                                         | Answer from the preamble                                                                                 | 10:12, Lisbon                                                                                             |
 | 2   | What time is it in Kathmandu?                                                                                            | Call `time_in_zone` with `Asia/Kathmandu`                                                                | 14:57                                                                                                     |
 | 3   | When is my next event?                                                                                                   | Call `get_next_event`                                                                                    | Wed 14 Oct, 17:05 Lisbon time (optional: tomorrow, 19:40 New York time, 7 h 35 min, in 1 day, 6 h 53 min) |
-| 4   | When do I need to leave for it?                                                                                          | Call `compute_leave_by`                                                                                  | 13:35, 30 min to the airport, 3 h before an international flight (optional: in 1 day, 3 h 23 min)         |
+| 4   | When do I need to leave for it?                                                                                          | Call `be_there_by`; give the time to be at the airport and its rule, never a travel time                 | 14:05, 3 h before an international flight (optional: tomorrow, Wed 14 Oct, in 1 day, 3 h 53 min)          |
 | 5   | I'm in Kathmandu now                                                                                                     | Call `set_my_location`; keep Lisbon, because you shared it in the last 3 days, and suggest sharing again | Lisbon, Share my location                                                                                 |
 | 6   | What's on tomorrow? _(now: 00:30 Wed 14 Oct in Lisbon, `2026-10-13T23:30:00Z`)_                                          | Ask which day you mean; don't answer                                                                     | Wed 14 Oct, Thu 15 Oct                                                                                    |
 | 7   | What time is it? _(nothing known about your location)_                                                                   | Ask where you are and point to the share button                                                          | (no time)                                                                                                 |
@@ -84,9 +83,8 @@ A model's wording varies from run to run, so replies are checked for their value
 - "Today" or "tomorrow" between 00:00 and 03:59 your time.
 - A weekday name that is today ("Friday?" asked on a Friday): today, or next week?
 - An unknown timezone.
-- A leave-by question when no travel time is known.
 
-**Leave-by:** leave at the event start, minus the buffer, minus the travel time.
+**Be there by:** the event start, minus the time below.
 
 | Event                | Be there before the start |
 | -------------------- | ------------------------- |
@@ -97,7 +95,7 @@ A model's wording varies from run to run, so replies are checked for their value
 | Bus                  | 15 min                    |
 | Anything else        | 0                         |
 
-Travel time comes from, in order: what you just said ("it's 45 minutes to the airport"), the event's own `transit_minutes`, then your settings (`airport` for flights, `other` for everything else), then asking you. If the leave time has already passed, the reply says how late you are and how long until the event.
+The app doesn't know how long it takes you to get there: that depends on where you are, how you travel, traffic and the weather. So it never guesses. The reply gives the time to be there and the rule it used, and when to leave is yours to judge. Real travel times need live routing, which is on the roadmap. If that time has already passed, the reply says how late it is and how long until the event.
 
 **Formatting** (always done by code):
 
@@ -112,13 +110,13 @@ Travel time comes from, in order: what you just said ("it's 45 minutes to the ai
 
 Each tool is a thin wrapper over one core function. Inputs are validated with zod. Results include ready-to-say `display` strings, so the model only ever repeats values.
 
-| Tool               | Input                                                   | Returns                                                                                                                           |
-| ------------------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `time_in_zone`     | `zone`, a valid IANA name                               | Local time, date and city in that zone                                                                                            |
-| `set_my_location`  | `zone`, `place_name`                                    | Stores what you said, and whether it's in effect (a shared location from the last 3 days takes priority), plus its local time now |
-| `get_next_event`   | optional `kind` (`flight`, `train`, …), for "my flight" | The next event, or the next of that kind: start and end in their own zones, duration, relative day, time until                    |
-| `events_on_day`    | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD`   | That day's events, _or_ `ambiguous` with options to offer you                                                                     |
-| `compute_leave_by` | `event_id`, optional `transit_minutes`                  | The leave time, time until then, and the assumptions; _or_ `need_transit_time`                                                    |
+| Tool              | Input                                                   | Returns                                                                                                                           |
+| ----------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `time_in_zone`    | `zone`, a valid IANA name                               | Local time, date and city in that zone                                                                                            |
+| `set_my_location` | `zone`, `place_name`                                    | Stores what you said, and whether it's in effect (a shared location from the last 3 days takes priority), plus its local time now |
+| `get_next_event`  | optional `kind` (`flight`, `train`, …), for "my flight" | The next event, or the next of that kind: start and end in their own zones, duration, relative day, time until                    |
+| `events_on_day`   | `day`: `today`, `tomorrow`, a weekday or `YYYY-MM-DD`   | That day's events, _or_ `ambiguous` with options to offer you                                                                     |
+| `be_there_by`     | `event_id`                                              | When to be there, in the event's own zone, how long until then, and the rule used                                                 |
 
 These don't go through the model at all; the Telegram adapter calls the core directly:
 
@@ -131,10 +129,10 @@ These don't go through the model at all; the Telegram adapter calls the core dir
 
 Everything below is stored in Postgres as ordinary tables, one row per trip, event and so on. JSON is used only for the seed file.
 
-- **User:** id, Telegram id, travel-time settings (`airport`, `other` in minutes).
+- **User:** id, Telegram id.
 - **Location state:** user, source (`shared_location` or `user_said`), zone, place name, when. The latest of each source is kept.
 - **Trip:** id, user, title, start date, optional end date, members (just the owner for now).
-- **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone, optional `transit_minutes`. Flights also have from/to airport codes and `international`.
+- **Event:** id, trip, kind (`flight`, `train`, `bus`, `ferry`, `stay`, `activity`, `call`), title, start and end as wall time plus zone. Flights also have from/to airport codes and `international`.
 - **Conversation:** the last 20 messages per user, yours and the bot's. Tool calls and their results aren't kept: they hold values like "in 2 h" that go stale, so the model calls tools again each turn. Older messages are deleted. Anything worth keeping is saved through a core service, never left only in the chat.
 - **Usage:** tokens used per user per day, for the cap (step 7).
 
@@ -142,7 +140,7 @@ Everything below is stored in Postgres as ordinary tables, one row per trip, eve
 
 1. Reads `seed.json` and checks its shape with zod. Unknown fields are refused, so a misspelt optional field can't be silently ignored.
 2. Calls the core's `importTrips` service. That's the same validation that trips created by chat will go through in slice 2, so the import is just another driving adapter.
-3. _Replaces_ your trips, in one transaction, then saves your travel-time settings. If any event is invalid, nothing changes and the error names the event, for example "event 'Flight LIS → JFK', start: 2027-03-28T01:30 doesn't exist in Europe/Lisbon (clocks jump forward)".
+3. _Replaces_ your trips, in one transaction. If any event is invalid, nothing changes and the error names the event, for example "event 'Flight LIS → JFK', start: 2027-03-28T01:30 doesn't exist in Europe/Lisbon (clocks jump forward)".
 
 Editing the file and running `pnpm seed` again brings the database back in line with it. The import runs only when you start it, never when the bot starts, and it's retired once slice 2 exists. The bot only ever reads the database, never the file. Tests don't read `seed.json`; each test builds its own made-up trip and sets a fake clock.
 
@@ -176,8 +174,9 @@ Each one was checked on 2026-10-11 against the npm registry, the official docs, 
 | D10 | Database access            | **Plain SQL in the database adapters**, one file per port, no ORM or query builder                                                                                                                                                                  | You see exactly what's sent, as with plain `fetch` in D4. Rows become domain types in one place                                                                                                                 | Drizzle or Kysely: typed queries, but another layer to learn                                                                                 |
 | D11 | Migrations                 | **Numbered `.sql` files and a small runner** that records which have run, each in a transaction                                                                                                                                                     | Plain SQL, no tool to learn                                                                                                                                                                                     | node-pg-migrate, dbmate                                                                                                                      |
 | D12 | Times in the database      | **Event times as text plus the zone**, exactly as the core uses them. Trip dates use `date`, read back as text                                                                                                                                      | Drivers turn Postgres dates and timestamps into JS `Date` objects in some zone. Tested: PGlite returned the date `2026-10-14` as midnight UTC                                                                   | `timestamp` columns with custom parsers                                                                                                      |
+| D13 | Travel time to the airport | **Never estimated.** Leave-by questions get the time to be there (the start minus a rule per event type), and the rule.                                                                                                                             | It depends on where you are, how you travel, traffic and the weather, so a saved number was wrong most of the time. In the evals, gpt-oss also passed the saved number as if you had said it.                   | Saved travel times (built, then removed on 2026-11-18); asking every time; live routing (later)                                              |
 
-D10–D12 were added on 2026-11-15, during step 3. D1 is costly to reverse, so it also has [ADR 0004](../adr/0004-temporal-for-time.md).
+D10–D12 were added on 2026-11-15, during step 3, and D13 on 2026-11-18, during step 6. D1 is costly to reverse, so it also has [ADR 0004](../adr/0004-temporal-for-time.md).
 
 ## Build order
 
