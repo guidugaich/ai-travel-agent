@@ -20,7 +20,7 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
 ## Principles
 
 - The LLM never knows the time or does time arithmetic. Deterministic code does, and the model calls it as tools. The same goes for other facts that change: prices, availability, entry rules.
-- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time, and the active trip.
+- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time, the active trip, and the next trip if one is coming up.
 - Future events are stored as local wall time plus an IANA zone; UTC is derived when needed. Durations are computed, never stored.
 - Ambiguity leads to a clarifying question, never a guess.
 - The plan changes only through core services that validate the change and return a diff. Ambiguous or destructive changes need the user's confirmation.

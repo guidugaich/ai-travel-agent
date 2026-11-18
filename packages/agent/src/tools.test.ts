@@ -42,9 +42,19 @@ describe("the tools the model sees", () => {
     expect(tools.every((tool) => tool.definition.description.length > 20)).toBe(true);
     expect(tools[2]?.definition.parameters).toMatchObject({
       type: "object",
-      properties: { kind: { enum: [...EVENT_KINDS] } },
+      properties: { kind: { enum: [...EVENT_KINDS, "any"] } },
+      required: ["kind"],
       additionalProperties: false,
     });
+  });
+
+  test("get_next_event's kind is required: a placeholder is refused, and the error offers any", async () => {
+    const { call } = await setup();
+    for (const args of [{}, { kind: "" }, { kind: "?" }]) {
+      const result = await call("get_next_event", args);
+      expect(result.ok).toBe(false);
+      expect(result.ok ? "" : result.error).toContain('"any"');
+    }
   });
 
   test("arguments that don't match are refused, saying what's wrong", async () => {
@@ -90,6 +100,25 @@ describe("each tool calls its core service", () => {
     });
   });
 
+  test("get_next_event with kind 'any', as models naturally write it, means every kind", async () => {
+    const dinnerTonight: NewTrip = {
+      title: "Lisbon",
+      startDate: "2026-10-13",
+      events: [
+        {
+          kind: "activity",
+          title: "Dinner",
+          start: { local: "2026-10-13T20:00", zone: "Europe/Lisbon" },
+        },
+      ],
+    };
+    const { call } = await setup({ trips: [usEastCoast, dinnerTonight] });
+    expect(await call("get_next_event", { kind: "any" })).toMatchObject({
+      ok: true,
+      value: { title: "Dinner" },
+    });
+  });
+
   test("events_on_day passes your word for the day through (example 6)", async () => {
     const { call } = await setup({ now: "2026-10-13T23:30:00Z" });
     expect(await call("events_on_day", { day: "tomorrow" })).toEqual({
@@ -100,7 +129,7 @@ describe("each tool calls its core service", () => {
 
   test("compute_leave_by, with the id from get_next_event (example 4)", async () => {
     const { call } = await setup();
-    const next = await call("get_next_event", {});
+    const next = await call("get_next_event", { kind: "any" });
     const { id } = (next.ok ? next.value : {}) as { id?: string };
 
     expect(await call("compute_leave_by", { event_id: id })).toMatchObject({

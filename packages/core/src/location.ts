@@ -1,7 +1,8 @@
 import { Temporal } from "temporal-polyfill";
 import type { Location, Trip, UserId } from "./domain.ts";
 import type { Deps } from "./ports.ts";
-import { cityName, formatClock, formatDate } from "./time/format.ts";
+import { relativeDayLabel, type RelativeDay } from "./time/days.ts";
+import { cityName, formatClock, formatDate, formatDuration } from "./time/format.ts";
 import { zonedAt, type Result, type TimeError } from "./time/time.ts";
 import { resolveWhereabouts, userToday, type Whereabouts } from "./whereabouts.ts";
 
@@ -40,15 +41,35 @@ export interface Context {
   readonly now: string;
   readonly whereabouts: WhereaboutsView;
   readonly activeTrip: string | null;
+  /** The earliest trip that hasn't started yet, so the model knows there's one to ask the tools about. */
+  readonly nextTrip: {
+    readonly title: string;
+    readonly startDate: string;
+    readonly relativeDay: RelativeDay | null;
+  } | null;
+  /** The user's usual travel times, which leave-by uses when they don't give one. */
+  readonly savedTravelTimes: {
+    readonly toAirport: string | null;
+    readonly toOtherPlaces: string | null;
+  };
 }
 
 export async function currentContext(userId: UserId, deps: Deps): Promise<Context> {
   const now = deps.clock.now();
-  const { whereabouts, trips } = await locate(userId, now, deps);
+  const [{ whereabouts, trips }, user] = await Promise.all([
+    locate(userId, now, deps),
+    deps.repo.getUser(userId),
+  ]);
+  const today = userToday(whereabouts, now);
   return {
     now: now.toString(),
     whereabouts: describe(whereabouts, now),
-    activeTrip: activeTrip(trips, userToday(whereabouts, now)),
+    activeTrip: activeTrip(trips, today),
+    nextTrip: nextTrip(trips, today),
+    savedTravelTimes: {
+      toAirport: minutes(user?.transitMinutes.airport),
+      toOtherPlaces: minutes(user?.transitMinutes.other),
+    },
   };
 }
 
@@ -123,6 +144,23 @@ function describe(whereabouts: Whereabouts, now: Temporal.Instant): WhereaboutsV
 
 function placeTime(zone: string, now: Temporal.Instant): PlaceTime {
   return { place: cityName(zone), zone, localTime: formatClock(now.toZonedDateTimeISO(zone)) };
+}
+
+function minutes(value: number | undefined): string | null {
+  return value === undefined ? null : formatDuration(Temporal.Duration.from({ minutes: value }));
+}
+
+function nextTrip(trips: readonly Trip[], today: Temporal.PlainDate): Context["nextTrip"] {
+  const [next] = trips
+    .filter((trip) => Temporal.PlainDate.compare(trip.startDate, today) > 0)
+    .sort((a, b) => Temporal.PlainDate.compare(a.startDate, b.startDate));
+  if (next === undefined) return null;
+  const start = Temporal.PlainDate.from(next.startDate);
+  return {
+    title: next.title,
+    startDate: formatDate(start, today),
+    relativeDay: relativeDayLabel(start, today),
+  };
 }
 
 function activeTrip(trips: readonly Trip[], today: Temporal.PlainDate): string | null {

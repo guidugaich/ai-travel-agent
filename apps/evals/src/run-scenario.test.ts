@@ -34,7 +34,7 @@ describe("runScenario", () => {
 
   test("the scenario's world is set up, earlier messages included", async () => {
     const llm = scriptedLlm([
-      call("get_next_event"),
+      call("get_next_event", { kind: "any" }),
       (request) =>
         call("compute_leave_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {

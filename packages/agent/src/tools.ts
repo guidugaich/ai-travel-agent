@@ -41,11 +41,17 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "get_next_event",
       description:
-        "The user's next upcoming event. Leave `kind` out to get the next event of any kind; set it only when the user names one (\"my flight\" is kind flight). Gives the event's id, and its times ready to repeat.",
+        'The user\'s next upcoming event. Use kind "any" unless the user names a kind ("my flight" is kind flight). Gives the event\'s id, and its times ready to repeat.',
       input: z.strictObject({
-        kind: z.enum(EVENT_KINDS).exactOptional().describe("Only events of this kind"),
+        // Required: small models fill an optional field with placeholders ("", "?", "null").
+        kind: z
+          .enum([...EVENT_KINDS, "any"])
+          .describe('"any" for the next event of any kind, or one kind, such as flight'),
       }),
-      run: async ({ kind }) => ({ ok: true, value: await getNextEvent(userId, kind, deps) }),
+      run: async ({ kind }) => ({
+        ok: true,
+        value: await getNextEvent(userId, kind === "any" ? undefined : kind, deps),
+      }),
     }),
     defineTool({
       name: "events_on_day",

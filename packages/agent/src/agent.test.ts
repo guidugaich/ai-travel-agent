@@ -70,7 +70,7 @@ describe("the spec's examples, each with a reply the output check accepts", () =
   test("3: when is my next event?", async () => {
     const reply =
       "Your flight LIS → JFK leaves tomorrow (Wed 14 Oct) at 17:05 Lisbon time and lands at 19:40 New York time, after 7 h 35 min. That's in 1 day, 6 h 53 min.";
-    const { ask } = await setup([call("get_next_event"), { text: reply }]);
+    const { ask } = await setup([call("get_next_event", { kind: "any" }), { text: reply }]);
     expect(await ask("When is my next event?")).toEqual(
       expect.objectContaining({ outcome: "answered", text: reply }),
     );
@@ -78,7 +78,7 @@ describe("the spec's examples, each with a reply the output check accepts", () =
 
   test("4: when do I need to leave for it?", async () => {
     const { ask, llm } = await setup([
-      call("get_next_event"),
+      call("get_next_event", { kind: "any" }),
       (request) =>
         call("compute_leave_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {
@@ -189,7 +189,7 @@ describe("handleMessage", () => {
 
   test("a value no tool gave triggers one retry, telling the model which", async () => {
     const { ask, llm } = await setup([
-      call("get_next_event"),
+      call("get_next_event", { kind: "any" }),
       { text: "Your flight leaves at 17:00." },
       { text: "Your flight leaves at 17:05." },
     ]);
@@ -201,7 +201,7 @@ describe("handleMessage", () => {
 
   test("if the retry is wrong too, the computed values are sent as they are", async () => {
     const { ask } = await setup([
-      call("get_next_event"),
+      call("get_next_event", { kind: "any" }),
       { text: "Your flight leaves at 17:00." },
       { text: "Your flight leaves at 17:01." },
     ]);
@@ -212,7 +212,7 @@ describe("handleMessage", () => {
 
   test(`the retry shares the limit of ${MAX_MODEL_CALLS} model calls`, async () => {
     const { ask, llm } = await setup([
-      ...Array.from({ length: MAX_MODEL_CALLS - 1 }, () => call("get_next_event")),
+      ...Array.from({ length: MAX_MODEL_CALLS - 1 }, () => call("get_next_event", { kind: "any" })),
       { text: "Your flight leaves at 17:00." },
     ]);
     expect(await ask("When is my flight?")).toMatchObject({ outcome: "fallback" });
@@ -221,7 +221,7 @@ describe("handleMessage", () => {
 
   test("when the model runs out of calls, a fixed reply is sent", async () => {
     const { ask } = await setup(
-      Array.from({ length: MAX_MODEL_CALLS }, () => call("get_next_event")),
+      Array.from({ length: MAX_MODEL_CALLS }, () => call("get_next_event", { kind: "any" })),
     );
     expect(await ask("When is my flight?")).toMatchObject({
       outcome: "gave_up",

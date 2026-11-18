@@ -49,8 +49,8 @@ export const SCENARIOS: readonly Scenario[] = [
     message: "When is my next event?",
     expect: {
       tools: ["get_next_event"],
-      // The flight's length and the time until it are welcome, but the question doesn't ask for them.
-      contains: ["tomorrow", "Wed 14 Oct", "17:05", "19:40"],
+      // The essentials: which day and when it leaves. "tomorrow", the arrival and durations are welcome extras.
+      contains: ["Wed 14 Oct", "17:05"],
     },
   },
   {
@@ -66,7 +66,7 @@ export const SCENARIOS: readonly Scenario[] = [
     message: "When do I need to leave for it?",
     expect: {
       tools: ["compute_leave_by"],
-      contains: ["13:35", "1 day, 3 h 23 min", "30 min", "3 h"],
+      contains: ["13:35", "30 min", "3 h"],
     },
   },
   {

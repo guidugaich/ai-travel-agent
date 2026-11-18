@@ -6,7 +6,7 @@ How the system is put together. Update it whenever a slice moves a boundary.
 
 You talk to the agent in Telegram. Each message goes through an **agent loop**:
 
-1. Code builds a context preamble: the current time, your timezone, the active trip.
+1. Code builds a context preamble: the current time, your timezone, the active trip and the next one.
 2. The conversation and a list of tools go to a language model.
 3. Whatever tools the model asks for run as our own deterministic code.
 4. The loop replies.
@@ -100,7 +100,7 @@ sequenceDiagram
   A->>C: get context for the preamble
   C->>D: read user's timezone and active trip
   D-->>C: timezone (with source), trip
-  C-->>A: now (UTC from the Clock), timezone, local time, active trip
+  C-->>A: now (UTC from the Clock), timezone, local time, active and next trip
   A->>L: conversation, preamble and tool definitions
   L-->>A: tool call: next event
   A->>C: query next event

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import type { NewTrip } from "./domain.ts";
 import { currentContext, setLocation, timeInZone } from "./location.ts";
 import { sharedLisbon, usEastCoast } from "./testing/fixtures.ts";
 import { setupDeps as setup, testUser as user } from "./testing/setup.ts";
@@ -18,7 +19,23 @@ describe("currentContext", () => {
         confidence: "high",
       },
       activeTrip: null,
+      nextTrip: { title: "US East Coast", startDate: "Wed 14 Oct", relativeDay: "tomorrow" },
+      savedTravelTimes: { toAirport: null, toOtherPlaces: null },
     });
+  });
+
+  test("your saved travel times are shown, so the model knows leave-by can use them", async () => {
+    const { deps } = await setup({ user: { id: user, transitMinutes: { airport: 30 } } });
+    expect((await currentContext(user, deps)).savedTravelTimes).toEqual({
+      toAirport: "30 min",
+      toOtherPlaces: null,
+    });
+  });
+
+  test("with two trips ahead, the next trip is the earlier one", async () => {
+    const later: NewTrip = { title: "Pacific", startDate: "2026-11-02", events: [] };
+    const { deps } = await setup({ locations: [sharedLisbon], trips: [later, usEastCoast] });
+    expect((await currentContext(user, deps)).nextTrip).toMatchObject({ title: "US East Coast" });
   });
 
   test("example 7: nothing known", async () => {
@@ -41,6 +58,7 @@ describe("currentContext", () => {
         confidence: "medium",
       },
       activeTrip: "US East Coast",
+      nextTrip: null,
     });
   });
 

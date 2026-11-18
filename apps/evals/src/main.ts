@@ -9,8 +9,8 @@ import { scorecard } from "./scorecard.ts";
 
 const CANDIDATES = fileURLToPath(new URL("../candidates.json", import.meta.url));
 const RESULTS = fileURLToPath(new URL("../results/", import.meta.url));
-// Models answer differently each time, so each scenario runs more than once.
-const RUNS = 3;
+// Models answer differently each time, so each scenario runs several times; 3 was too few to compare prompts.
+const RUNS = 5;
 
 async function main(only: string | undefined): Promise<number> {
   let json: unknown;

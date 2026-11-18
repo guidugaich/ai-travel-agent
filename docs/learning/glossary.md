@@ -57,7 +57,7 @@ In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with
 - _messages_: the conversation so far;
 - _tools_: the functions the model may ask for.
 
-**Context preamble.** Text our code computes and adds to every turn: current UTC time, the user's timezone (with confidence and source), local time, the active trip. The model reads these facts; it never works them out.
+**Context preamble.** Text our code computes and adds to every turn: current UTC time, the user's timezone (with confidence and source), local time, the active trip, and the next trip that hasn't started yet. The model reads these facts; it never works them out.
 
 **Output check.** A guard on the model's reply, run by code before it's sent. It finds every time, date, duration and relative day in the reply and requires each to appear in the preamble or in this turn's tool results. It's the same idea as validating an API response before trusting it: the model is fluent, not reliable, so anything it states as fact gets checked against what our code computed.
 
@@ -68,7 +68,7 @@ In Temporal, `PlainDateTime` is a wall time, `ZonedDateTime` is a wall time with
 - The model can't run them itself. It replies with a structured request: "call `get_next_event` with these arguments".
 - Our backend runs the function and sends the result back in the next request.
 
-The model is a planner that issues RPC requests; our server executes them, so our code is the gatekeeper. The exact message format varies by provider. A tool's description, and its arguments' descriptions, are instructions the model reads ("pass the user's own word for the day"), so much of the prompt engineering lives there. Ours are generated from zod schemas, which also check what the model sends.
+The model is a planner that issues RPC requests; our server executes them, so our code is the gatekeeper. The exact message format varies by provider. A tool's description, and its arguments' descriptions, are instructions the model reads ("pass the user's own word for the day"), so much of the prompt engineering lives there. Ours are generated from zod schemas, which also check what the model sends. A tool's error messages are prompts too: when gpt-oss sent `kind: "any"` and got back only a list of valid kinds, it gave up and guessed. Two lessons from the evals: accept the value models naturally reach for, and prefer a required choice with an explicit "any" over an optional field, because small models fill optional fields with placeholders such as `""` or `"?"`.
 
 **Agent loop.** A loop around the model call:
 
