@@ -188,10 +188,15 @@ Each step ends with tests passing, and something you can see.
 3. ✅ **Storage:** Postgres adapters for users, trips and location state, tested on PGlite; schema migrations; the `pnpm seed` import, with the seed file's zod schema.
 4. ✅ **The agent loop:** the LLM port, the tools, the preamble, the output check, and conversation history, all tested with a scripted fake model. The LLM port reports token counts from the start. Done when the conversation tests for examples 1–11 pass.
 5. ✅ **Telegram:** grammY with long polling, the share button, the allowlist (5B), and `pnpm bot` (5C). A lock on `.data/` (5A), because PGlite lets a second program open the same folder and silently loses its writes (tested on 0.5.16): with the bot running, `pnpm seed` must refuse. Done when you can chat with your bot locally using the fake model's answers. You'll need to create the bot with BotFather.
-6. **Real models:** the OpenAI-compatible adapter (6A, in `packages/openai-compatible`), used by `pnpm bot` when `LLM_BASE_URL` and `LLM_MODEL` are set (6B), and `pnpm eval` in `apps/evals` (6C) `pnpm eval` producing a scorecard (pass rate, latency, cost per conversation, data terms) for the candidates. You pick the model. Also check:
+6. **Real models:** the OpenAI-compatible adapter (6A, in `packages/openai-compatible`), used by `pnpm bot` when `LLM_BASE_URL` and `LLM_MODEL` are set (6B), and `pnpm eval` in `apps/evals` (6C), producing a scorecard (pass rate, latency, cost per conversation, data terms) for the candidates. You pick the model (6D). Also check:
 
    - that each provider accepts the tool schemas zod generates (they include `$schema` and a very large `maximum`);
    - that the evals catch values used in the wrong place: the output check only proves a value came from our code, so a reply giving the arrival time as the departure passes it;
    - how the output check's fallback reply (a code block) looks in Telegram, since the stand-in model never triggers it.
+
+   Local models so far (2026-11-18, a 36 GB Mac, Ollama 0.40.16 started with `OLLAMA_CONTEXT_LENGTH=8192`):
+
+   - `qwen3.6:35b` doesn't fit: Ollama's MLX runner grew to 31 GB and the Mac swapped, so calls timed out. Dropped.
+   - `gpt-oss:20b` (14 GB) fits, with a median of 3.6–5.2 s per conversation. Pass rate 16/33, then 24/33 after rewording the tool descriptions and naming the exact "based on …" phrases in the preamble.
 
 7. **Deploy:** choose a host (D8), set up backups, and add the daily token cap with its usage counter. Done when the bot runs while your laptop is off.
