@@ -38,7 +38,9 @@ export function unsupportedValues(reply: string, sources: readonly string[]): st
 }
 
 function valuesIn(text: string): { readonly raw: string; readonly key: string }[] {
+  // Some models, such as gpt-oss, write non-breaking spaces (U+202F); treat every kind of space alike.
+  const plain = text.replace(/\s/g, " ");
   return PATTERNS.flatMap(({ regex, key }) =>
-    [...text.matchAll(regex)].map((match) => ({ raw: match[0], key: key(match) })),
+    [...plain.matchAll(regex)].map((match) => ({ raw: match[0], key: key(match) })),
   );
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "qwen3.6-35b",
+    "baseUrl": "http://localhost:11434/v1",
+    "model": "qwen3.6:35b",
+    "dataTerms": "Runs on this Mac; nothing leaves it"
+  },
+  {
+    "name": "gpt-oss-20b",
+    "baseUrl": "http://localhost:11434/v1",
+    "model": "gpt-oss:20b",
+    "dataTerms": "Runs on this Mac; nothing leaves it"
+  }
+]

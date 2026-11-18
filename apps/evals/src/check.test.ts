@@ -38,6 +38,11 @@ describe("checkRun", () => {
     ]);
   });
 
+  test("values are found when a model writes non-breaking spaces, as gpt-oss does", () => {
+    const reply = "Which day do you mean: Wed 14 Oct or Thu 15 Oct?";
+    expect(checkRun({ contains: ["Wed 14 Oct", "Thu 15 Oct"] }, { ...good, reply })).toEqual([]);
+  });
+
   test("values are found whatever their case", () => {
     expect(checkRun({ contains: ["Lisbon"] }, { ...good, reply: "Keeping LISBON." })).toEqual([]);
   });

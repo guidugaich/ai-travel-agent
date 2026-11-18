@@ -25,12 +25,14 @@ export function checkRun(expect: Expectations, run: RunOutcome): string[] {
   for (const tool of expect.tools ?? []) {
     if (!run.toolsCalled.includes(tool)) failures.push(`didn't call ${tool}`);
   }
-  const reply = run.reply.toLowerCase();
+  // Some models, such as gpt-oss, write non-breaking spaces (U+202F); treat every kind of space alike.
+  const plain = run.reply.replace(/\s/g, " ");
+  const reply = plain.toLowerCase();
   for (const value of expect.contains ?? []) {
     if (!reply.includes(value.toLowerCase())) failures.push(`missing "${value}"`);
   }
   for (const pattern of expect.excludes ?? []) {
-    if (pattern.test(run.reply)) failures.push(`shouldn't match ${String(pattern)}`);
+    if (pattern.test(plain)) failures.push(`shouldn't match ${String(pattern)}`);
   }
   return failures;
 }

@@ -48,6 +48,11 @@ describe("unsupportedValues", () => {
     expect(unsupportedValues("It's 12:00.", ['{"now":"2026-10-13T09:12:00Z"}'])).toEqual(["12:00"]);
   });
 
+  test("non-breaking spaces, which some models write, don't hide a value", () => {
+    expect(unsupportedValues("Your flight is in 6 h.", [leaveByResult])).toEqual(["6 h"]);
+    expect(unsupportedValues("Leave at 13:35, in 1 day, 3 h 23 min.", [leaveByResult])).toEqual([]);
+  });
+
   test("a reply without times or dates passes", () => {
     expect(unsupportedValues("Where are you right now?", [])).toEqual([]);
   });
