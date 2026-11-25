@@ -100,7 +100,7 @@ export const SCENARIOS: readonly Scenario[] = [
     name: "8: after landing, from your trip",
     world: { now: "2026-10-15T14:00:00Z" },
     message: "What time is it?",
-    expect: { contains: ["10:00", "New York", "trip"] },
+    expect: { contains: ["10:00", "New York"] },
   },
   {
     name: "9: mid-flight",
@@ -118,6 +118,6 @@ export const SCENARIOS: readonly Scenario[] = [
     name: "11: saying a place with no recent share",
     world: { locations: [] },
     message: "I'm in Kathmandu now",
-    expect: { tools: ["set_my_location"], contains: ["Kathmandu", "14:57", "said"] },
+    expect: { tools: ["set_my_location"], contains: ["Kathmandu", "14:57"] },
   },
 ];

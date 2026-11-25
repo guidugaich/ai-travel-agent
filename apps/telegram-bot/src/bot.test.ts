@@ -102,6 +102,14 @@ describe("the Telegram bot", () => {
     ]);
   });
 
+  test("the model's Markdown bold is removed, because Telegram would show the asterisks", async () => {
+    const { bot, texts } = await setup([
+      { text: "**Share your location** so I can tell the time." },
+    ]);
+    await bot.handleUpdate(update(you, text("What time is it?")));
+    expect(texts()).toEqual(["Share your location so I can tell the time."]);
+  });
+
   test("a shared location sets your timezone directly, without the model", async () => {
     const { bot, texts, llm, repo } = await setup();
     await bot.handleUpdate(update(you, at(41.15, -8.61)));

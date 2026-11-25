@@ -99,7 +99,7 @@ export function createBot(token: string, deps: BotDeps, botInfo?: UserFromGetMe)
     const started = deps.clock.now();
     await ctx.replyWithChatAction("typing");
     const answer = await handleMessage(ctx.userId, ctx.message.text, deps);
-    await reply(ctx, answer.text);
+    await reply(ctx, answer.text.replaceAll("**", "")); // Telegram would show the model's bold as asterisks
     deps.log({
       event: "reply",
       userId: ctx.userId,
