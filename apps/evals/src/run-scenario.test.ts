@@ -36,7 +36,7 @@ describe("runScenario", () => {
     const llm = scriptedLlm([
       call("get_next_event", { kind: "any" }),
       {
-        text: "Be at the airport by 14:05 tomorrow, in 1 day, 3 h 53 min: at the airport 3 h before an international flight.",
+        text: "Be at the airport by 14:05 tomorrow (Wed 14 Oct), Lisbon time.",
       },
     ]);
     const run = await runScenario(scenario(4), llm);
@@ -48,6 +48,15 @@ describe("runScenario", () => {
       "assistant",
       "user",
     ]);
+  });
+
+  test("example 4 fails a reply that turns the time to be at the airport into a time to leave", async () => {
+    const llm = scriptedLlm([
+      call("get_next_event", { kind: "any" }),
+      { text: "Leave Lisbon by 14:05 on Wed 14 Oct (tomorrow)." },
+    ]);
+    const run = await runScenario(scenario(4), llm);
+    expect(run.passed).toBe(false);
   });
 
   test("a wrong reply fails, naming what's wrong", async () => {

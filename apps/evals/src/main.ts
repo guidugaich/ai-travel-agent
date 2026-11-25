@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCandidates, type Candidate } from "./candidates.ts";
+import type { Expectations } from "./check.ts";
 import { runScenario, type RunResult } from "./run-scenario.ts";
 import { SCENARIOS } from "./scenarios.ts";
 import { scorecard } from "./scorecard.ts";
@@ -40,12 +41,17 @@ async function main(only: string | undefined): Promise<number> {
 
     const runs: RunResult[] = [];
     for (const scenario of SCENARIOS) {
+      console.log(
+        `\n${scenario.name}\n  asks:    ${scenario.message}\n  expects: ${expected(scenario.expect)}`,
+      );
       for (let n = 1; n <= RUNS; n++) {
         const run = await runScenario(scenario, llm);
         const why = run.passed ? "" : `: ${run.failures.join("; ")}`;
         console.log(
           `${candidate.name} ${run.passed ? "✔" : "✘"} ${scenario.name} (${n}/${RUNS})${why}`,
         );
+        if (run.reply !== "")
+          console.log(`  reply:   ${run.reply.replace(/\n/g, "\n           ")}`);
         runs.push(run);
       }
     }
@@ -61,6 +67,14 @@ async function main(only: string | undefined): Promise<number> {
   await writeFile(join(RESULTS, "scorecard.md"), card);
   console.log(`\n${card}\nEvery conversation is in apps/evals/results/.`);
   return 0;
+}
+
+function expected(expect: Expectations): string {
+  return [
+    ...(expect.tools ?? []).map((tool) => `calls ${tool}`),
+    ...(expect.contains ?? []).map((value) => `says "${value}"`),
+    ...(expect.excludes ?? []).map((pattern) => `never ${String(pattern)}`),
+  ].join(", ");
 }
 
 process.exitCode = await main(process.argv[2]);

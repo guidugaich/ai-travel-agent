@@ -66,9 +66,13 @@ export const SCENARIOS: readonly Scenario[] = [
     message: "When do I need to leave for it?",
     expect: {
       tools: ["get_next_event"],
-      contains: ["14:05", "3 h"],
+      contains: ["14:05", "14 Oct"],
       // The app never knows travel time, so the reply must not claim one, such as "30 min to the airport".
-      excludes: [/\d+\s*(?:min|minutes?|h|hours?)\s+to (?:get to |reach )?the airport/i],
+      // Nor turn the time to be at the airport into a time to leave, which assumes no travel time.
+      excludes: [
+        /\d+\s*(?:min|minutes?|h|hours?)\s+to (?:get to |reach )?the airport/i,
+        /\bleave\b[^.\n]{0,20}?\b(?:by|at)\s+14:05/i,
+      ],
     },
   },
   {

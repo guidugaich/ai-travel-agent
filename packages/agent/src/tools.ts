@@ -40,7 +40,7 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "get_next_event",
       description:
-        'The user\'s next upcoming event. Use kind "any" unless the user names a kind ("my flight" is kind flight). Gives its times ready to repeat, including when to be at the airport, station or port (beThereBy) and its rule. You can\'t know how long the user takes to get there: never estimate a travel time or a time to leave home.',
+        'The user\'s next upcoming event. Use kind "any" unless the user names a kind ("my flight" is kind flight). Gives its times ready to repeat, including beThereBy: when to be at the airport, station or port, not when to leave, and its rule. You can\'t know how long the user takes to get there: never estimate a travel time or a time to leave home.',
       input: z.strictObject({
         // Required: small models fill an optional field with placeholders ("", "?", "null").
         kind: z
