@@ -10,8 +10,7 @@ coverage/
 .env.*
 !.env.example
 
-# Local dev database, and the seed file with your Telegram id
-.data/
+# The seed file, with your Telegram id
 seed.json
 
 # Eval runs: scorecards and conversations

@@ -21,6 +21,15 @@ async function tableNames(db: Sql): Promise<string[]> {
 }
 
 describe("migrate", () => {
+  test("the first run applies every migration in name order, and returns their names", async () => {
+    const db = await emptyDb();
+    expect(await migrate(db)).toEqual([
+      "001-initial.sql",
+      "002-messages.sql",
+      "003-no-travel-times.sql",
+    ]);
+  });
+
   test("a second run applies nothing", async () => {
     const db = await emptyDb();
     await migrate(db);

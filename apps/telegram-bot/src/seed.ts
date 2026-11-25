@@ -95,7 +95,12 @@ async function main(path: string): Promise<number> {
     return 1;
   }
 
-  const { db, close } = await openDatabase(url);
+  const { db, close, migrated } = await openDatabase(url);
+  console.log(
+    migrated.length > 0
+      ? `Applied migrations: ${migrated.join(", ")}`
+      : "No migrations to apply: the tables are up to date.",
+  );
   try {
     const result = await seed(db, file);
     if (!result.ok) {

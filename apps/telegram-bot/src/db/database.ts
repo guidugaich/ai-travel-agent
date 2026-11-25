@@ -7,14 +7,17 @@ export interface Database {
   readonly db: Sql;
   /** Closes every connection, so the program can exit. */
   readonly close: () => Promise<void>;
+  /** The migrations this opening applied, oldest first; empty when the tables were up to date. */
+  readonly migrated: readonly string[];
 }
 
 /** Connects to the Postgres server at `url` and brings its tables up to date. */
 export async function openDatabase(url: string): Promise<Database> {
   const pool = new Pool({ connectionString: url });
   const db = pgSql(pool);
+  let migrated: string[];
   try {
-    await migrate(db);
+    migrated = await migrate(db);
   } catch (error) {
     await pool.end();
     if (error instanceof Error && "code" in error && error.code === "ECONNREFUSED") {
@@ -25,5 +28,5 @@ export async function openDatabase(url: string): Promise<Database> {
     }
     throw error;
   }
-  return { db, close: () => pool.end() };
+  return { db, close: () => pool.end(), migrated };
 }

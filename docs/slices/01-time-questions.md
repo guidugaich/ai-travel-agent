@@ -145,7 +145,7 @@ Editing the file and running `pnpm seed` again brings the database back in line 
 
 `seed.json` holds your real Telegram id, so git ignores it. The committed [`seed.example.json`](../../seed.example.json) shows the format, which matches the core's trip types, and a test keeps it valid. Copy it to `seed.json` and edit your copy. The bot uses the real clock, so set the dates in the future before you run `pnpm seed`.
 
-**Opening the database.** Locally, Postgres runs in Docker (`docker compose up -d`, see D14), and `DATABASE_URL` in `.env` points to it. Every program that opens it (`pnpm seed` and the bot) first applies any migrations it hasn't run yet; if nothing answers, the error says how to start it. Several programs can be connected at once, psql included. Tests use PGlite in memory, or a real Postgres when `TEST_DATABASE_URL` is set, as in CI. Until 7A, the dev database was PGlite in `.data/pglite/`, with a lock file so only one program opened it.
+**Opening the database.** Locally, Postgres runs in Docker (`docker compose up -d`, see D14), and `DATABASE_URL` in `.env` points to it. Every program that opens it (`pnpm seed` and the bot) first applies any migrations it hasn't run yet and logs which it applied, or that none were needed; if nothing answers, the error says how to start it. Several programs can be connected at once, psql included. Tests use PGlite in memory, or a real Postgres when `TEST_DATABASE_URL` is set, as in CI. Until 7A, the dev database was PGlite in `.data/pglite/`, with a lock file so only one program opened it.
 
 ## Safety and cost
 

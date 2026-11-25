@@ -8,7 +8,12 @@ import { standInLlm } from "./stand-in-llm.ts";
 import { systemClock } from "./system-clock.ts";
 
 /** One JSON line per event, timestamped, to standard output. */
-function log(entry: LogEntry | { readonly event: "unhandled"; readonly error: string }): void {
+function log(
+  entry:
+    | LogEntry
+    | { readonly event: "unhandled"; readonly error: string }
+    | { readonly event: "migrations"; readonly applied: readonly string[] },
+): void {
   console.log(JSON.stringify({ at: systemClock.now().toString(), ...entry }));
 }
 
@@ -21,7 +26,8 @@ async function main(): Promise<number> {
   const { token, allowedTelegramIds, databaseUrl, llm } = config.value;
   const model = llm === null ? "the stand-in model" : `${llm.model} at ${llm.baseUrl}`;
 
-  const { db, close } = await openDatabase(databaseUrl);
+  const { db, close, migrated } = await openDatabase(databaseUrl);
+  log({ event: "migrations", applied: migrated });
   const bot = createBot(token, {
     clock: systemClock,
     repo: postgresRepository(db),
