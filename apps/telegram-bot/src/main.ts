@@ -18,10 +18,10 @@ async function main(): Promise<number> {
     console.error(config.error);
     return 1;
   }
-  const { token, allowedTelegramIds, llm } = config.value;
+  const { token, allowedTelegramIds, databaseUrl, llm } = config.value;
   const model = llm === null ? "the stand-in model" : `${llm.model} at ${llm.baseUrl}`;
 
-  const { db, close } = await openDatabase();
+  const { db, close } = await openDatabase(databaseUrl);
   const bot = createBot(token, {
     clock: systemClock,
     repo: postgresRepository(db),

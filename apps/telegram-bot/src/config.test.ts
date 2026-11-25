@@ -1,29 +1,47 @@
 import { describe, expect, test } from "vitest";
 import { loadConfig } from "./config.ts";
 
-const telegram = { TELEGRAM_BOT_TOKEN: "123:fake-token", ALLOWED_TELEGRAM_IDS: "4242" };
+const database = { DATABASE_URL: "postgresql://postgres@localhost:5432/dev" };
+const telegram = {
+  TELEGRAM_BOT_TOKEN: "123:fake-token",
+  ALLOWED_TELEGRAM_IDS: "4242",
+  ...database,
+};
 
 describe("loadConfig", () => {
-  test("reads the token and the allowed Telegram ids", () => {
+  test("reads the token, the allowed Telegram ids and the database URL", () => {
     expect(
-      loadConfig({ TELEGRAM_BOT_TOKEN: "123:fake-token", ALLOWED_TELEGRAM_IDS: "4242, 9999" }),
+      loadConfig({
+        TELEGRAM_BOT_TOKEN: "123:fake-token",
+        ALLOWED_TELEGRAM_IDS: "4242, 9999",
+        ...database,
+      }),
     ).toEqual({
       ok: true,
-      value: { token: "123:fake-token", allowedTelegramIds: new Set([4242, 9999]), llm: null },
+      value: {
+        token: "123:fake-token",
+        allowedTelegramIds: new Set([4242, 9999]),
+        databaseUrl: "postgresql://postgres@localhost:5432/dev",
+        llm: null,
+      },
     });
   });
 
   test("an empty allowlist is fine: the bot refuses everyone, and tells them their id", () => {
-    expect(loadConfig({ TELEGRAM_BOT_TOKEN: "123:fake-token", ALLOWED_TELEGRAM_IDS: "" })).toEqual({
-      ok: true,
-      value: { token: "123:fake-token", allowedTelegramIds: new Set(), llm: null },
-    });
+    expect(
+      loadConfig({ TELEGRAM_BOT_TOKEN: "123:fake-token", ALLOWED_TELEGRAM_IDS: "", ...database }),
+    ).toMatchObject({ ok: true, value: { allowedTelegramIds: new Set() } });
   });
 
   test("a missing token is refused, pointing to .env.example", () => {
     const result = loadConfig({});
     expect(result.ok).toBe(false);
     expect(result.ok ? "" : result.error).toMatch(/TELEGRAM_BOT_TOKEN[\s\S]*\.env\.example/);
+  });
+
+  test("a missing database URL is refused", () => {
+    const result = loadConfig({ TELEGRAM_BOT_TOKEN: "123:fake-token" });
+    expect(result.ok ? "" : result.error).toContain("DATABASE_URL");
   });
 
   test("an id that isn't a number is refused", () => {

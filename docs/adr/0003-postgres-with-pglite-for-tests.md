@@ -1,6 +1,6 @@
-# 0003. Use Postgres, with PGlite for tests and local development
+# 0003. Use Postgres, with PGlite for tests
 
-- Status: Accepted
+- Status: Accepted, amended on 2026-11-25 (local development)
 - Date: 2026-10-11
 
 ## Context
@@ -24,8 +24,9 @@ Checked on 2026-10-11:
 Option 3.
 
 - **Production:** a managed Postgres in the EU, with the provider chosen at deployment (slice 1, step 7).
-- **Tests and local development:** PGlite.
-- **Repository adapters:** written against a minimal "run this SQL with these parameters" interface, with one implementation for PGlite and one for the production driver (`postgres` or `pg`, chosen at step 3).
+- **Tests:** PGlite in memory, or a real Postgres when `TEST_DATABASE_URL` is set, as it is in CI.
+- **Local development:** Postgres 18 in Docker (`docker-compose.yml`), since 2026-11-25. It was PGlite until then.
+- **Repository adapters:** written against a minimal "run this SQL with these parameters" interface, with one implementation for PGlite and one for the `pg` driver.
 
 ## Consequences
 
@@ -33,3 +34,7 @@ Option 3.
 - If PGlite turns out to behave differently from production Postgres for something we use, tests switch to option 2 (Postgres in Docker), which is already possible on the development machine and in CI.
 - When the provider is chosen, check its free-tier limits. Some providers pause inactive databases, which a personal bot would hit.
 - When the Postgres libraries are added, they go on the list of libraries the core may not import (`.dependency-cruiser.cjs`).
+
+## Amendment, 2026-11-25
+
+Local development moved from PGlite to Postgres in Docker (slice 1, D14). PGlite allows one connection, so the bot and `pnpm seed` needed a lock, and nothing else, such as psql, could look while the bot ran. Dev also never used the production driver, so driver differences would first show up in production. Tests keep PGlite, so `pnpm test` and the git hooks still need no Docker. CI runs the storage tests on a real Postgres instead.

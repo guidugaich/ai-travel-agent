@@ -108,13 +108,15 @@ That loop is all an "agent" is. It runs inside our process each time a new messa
 
 **CI (continuous integration).** A fresh machine that checks out every push and runs the checks. It catches "works on my machine" problems, and nobody can skip it. Here it's GitHub Actions (`.github/workflows/`).
 
+**Service container.** A Docker container that CI starts next to a job, such as a Postgres for the tests to use, and throws away when the job ends. CI's version of `docker compose up`.
+
 **Lockfile / frozen lockfile.** `pnpm-lock.yaml` records the exact version of every dependency. `pnpm install --frozen-lockfile` fails if it's out of date, so CI installs exactly what was tested locally.
 
 **Install scripts (supply chain).** npm packages can run code when they're installed, which is a common route for attacks. pnpm blocks this by default, and we keep it that way (`allowBuilds` in `pnpm-workspace.yaml`).
 
 **Type stripping.** How Node 24 runs `.ts` files directly: it deletes the type annotations and runs what's left as JavaScript, with no build step and no type checking (`pnpm typecheck` does that). Two consequences: imports must name the real file (`./time.ts`), and syntax that would need translating rather than deleting, such as `enum`, isn't allowed. The `erasableSyntaxOnly` compiler flag rejects it.
 
-**PGlite.** Real Postgres compiled to WebAssembly, running inside the Node process instead of as a separate server. Tests start an empty in-memory database in about half a second, with no Docker. Local dev saves one to a folder. It allows one connection at a time, so production uses a normal Postgres server.
+**PGlite.** Real Postgres compiled to WebAssembly, running inside the Node process instead of as a separate server. Tests start an empty in-memory database in about half a second, with no Docker. It allows one connection at a time, so local development (Postgres in Docker) and production use a normal Postgres server, through the `pg` driver. The storage code sees both through one small interface, `Sql`.
 
 **Migration.** A numbered `.sql` file that changes the database's structure. The runner applies the files a database hasn't run yet, in order, and records each one in a `migrations` table. Once a migration has run on a real database, it's never edited: a change goes in a new file.
 

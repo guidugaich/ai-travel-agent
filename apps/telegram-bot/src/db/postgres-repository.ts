@@ -1,4 +1,4 @@
-import type { PGlite } from "@electric-sql/pglite";
+import type { Sql } from "./sql.ts";
 import type {
   EventKind,
   Location,
@@ -43,7 +43,7 @@ interface LocationRow {
 }
 
 /** The core's Repository port, on Postgres. All SQL lives here; rows become domain types below. */
-export function postgresRepository(db: PGlite): Repository {
+export function postgresRepository(db: Sql): Repository {
   return {
     async getUser(userId) {
       const { rows } = await db.query<UserRow>("select id from users where id = $1", [userId]);
@@ -135,7 +135,7 @@ export function postgresRepository(db: PGlite): Repository {
 }
 
 /** The user behind a Telegram account, created on first contact. The core never sees Telegram ids. */
-export async function telegramUserId(db: PGlite, telegramId: number): Promise<UserId> {
+export async function telegramUserId(db: Sql, telegramId: number): Promise<UserId> {
   const found = await db.query<{ id: string }>("select id from users where telegram_id = $1", [
     telegramId,
   ]);

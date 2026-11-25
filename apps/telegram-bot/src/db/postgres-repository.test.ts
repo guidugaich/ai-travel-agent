@@ -1,9 +1,10 @@
-import { PGlite } from "@electric-sql/pglite";
 import type { EventKind, Location, NewTrip, Repository } from "@ai-travel-agent/core";
 import { Temporal } from "temporal-polyfill";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { openTestDatabase } from "../testing/test-database.ts";
 import { migrate } from "./migrate.ts";
 import { postgresRepository } from "./postgres-repository.ts";
+import type { Sql } from "./sql.ts";
 
 const you = "00000000-0000-4000-8000-000000000001";
 const someoneElse = "00000000-0000-4000-8000-000000000002";
@@ -56,11 +57,12 @@ async function locationsOf(repo: Repository, userId: string) {
   return locations.map((location) => ({ ...location, setAt: location.setAt.toString() }));
 }
 
-let db: PGlite;
+let db: Sql;
+let close: () => Promise<void>;
 let repo: Repository;
 
 beforeAll(async () => {
-  db = new PGlite();
+  ({ db, close } = await openTestDatabase());
   await migrate(db);
   repo = postgresRepository(db);
 });
@@ -71,7 +73,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await db.close();
+  await close();
 });
 
 describe("users", () => {

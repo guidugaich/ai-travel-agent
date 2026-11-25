@@ -1,8 +1,8 @@
-import type { PGlite } from "@electric-sql/pglite";
+import type { Sql } from "./sql.ts";
 import { HISTORY_LIMIT, type ChatMessage, type ConversationStore } from "@ai-travel-agent/agent";
 
 /** The agent's ConversationStore port, on Postgres. Message ids increase, so they give the order. */
-export function postgresConversations(db: PGlite): ConversationStore {
+export function postgresConversations(db: Sql): ConversationStore {
   return {
     async recent(userId) {
       const { rows } = await db.query<ChatMessage>(

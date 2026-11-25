@@ -1,4 +1,4 @@
-import type { PGlite } from "@electric-sql/pglite";
+import type { Sql } from "./db/sql.ts";
 import {
   EVENT_KINDS,
   importTrips,
@@ -40,7 +40,7 @@ const seedFile = z.strictObject({
 
 /** Replaces the Telegram user's trips with the file's, or changes nothing. */
 export async function seed(
-  db: PGlite,
+  db: Sql,
   file: unknown,
 ): Promise<Result<{ readonly trips: number; readonly events: number }, readonly string[]>> {
   const parsed = seedFile.safeParse(file);
@@ -80,6 +80,11 @@ function describeTimeError(error: TimeError): string {
 }
 
 async function main(path: string): Promise<number> {
+  const url = process.env.DATABASE_URL;
+  if (url === undefined || url === "") {
+    console.error("DATABASE_URL isn't set. Copy it from .env.example into .env.");
+    return 1;
+  }
   let file: unknown;
   try {
     file = JSON.parse(await readFile(path, "utf8"));
@@ -90,7 +95,7 @@ async function main(path: string): Promise<number> {
     return 1;
   }
 
-  const { db, close } = await openDatabase();
+  const { db, close } = await openDatabase(url);
   try {
     const result = await seed(db, file);
     if (!result.ok) {

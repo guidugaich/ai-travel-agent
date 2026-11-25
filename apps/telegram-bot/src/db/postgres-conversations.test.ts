@@ -1,20 +1,21 @@
-import type { PGlite } from "@electric-sql/pglite";
 import { HISTORY_LIMIT, type ConversationStore } from "@ai-travel-agent/agent";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
-import { openDatabase, type Database } from "./database.ts";
+import { openTestDatabase } from "../testing/test-database.ts";
+import { migrate } from "./migrate.ts";
 import { postgresConversations } from "./postgres-conversations.ts";
 import { postgresRepository } from "./postgres-repository.ts";
+import type { Sql } from "./sql.ts";
 
 const you = "00000000-0000-4000-8000-000000000001";
 const someoneElse = "00000000-0000-4000-8000-000000000002";
 
-let database: Database;
-let db: PGlite;
+let db: Sql;
+let close: () => Promise<void>;
 let conversations: ConversationStore;
 
 beforeAll(async () => {
-  database = await openDatabase("memory://");
-  db = database.db;
+  ({ db, close } = await openTestDatabase());
+  await migrate(db);
   conversations = postgresConversations(db);
 });
 
@@ -26,7 +27,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await database.close();
+  await close();
 });
 
 async function messageRows(): Promise<number> {

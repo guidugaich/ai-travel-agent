@@ -60,7 +60,7 @@ block-beta
   - Telegram messages go to the agent.
   - Things that need no language understanding go straight to the core: identifying the user, shared locations, and button taps such as **Confirm**.
   - A future HTTP API calls the core's services directly, with no LLM involved.
-- **Driven adapters** implement the application's outbound **ports**, which are interfaces for what the application needs. The core defines the Clock and the repositories; the agent defines the LLM port and the conversation store. Tests replace these adapters with fakes.
+- **Driven adapters** implement the application's outbound **ports**, which are interfaces for what the application needs. The core defines the Clock and the repositories; the agent defines the LLM port and the conversation store. Tests replace these adapters with fakes. The Postgres adapters talk to a small `Sql` interface: the app gets a real Postgres through `pg` (in Docker locally), and the storage tests get PGlite, or a real Postgres in CI.
 
 The arrows show who calls whom at runtime. Code dependencies always point inwards, so the application never imports an adapter.
 

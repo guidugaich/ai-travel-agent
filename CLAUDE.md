@@ -48,8 +48,10 @@ Node comes from `.nvmrc` (`nvm use`), and pnpm is pinned in `package.json`.
 | `pnpm typecheck`                             | TypeScript, all workspaces                                     |
 | `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph                             |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest                                                         |
+| `pnpm test:pg`                               | Tests, storage on the local Postgres (as in CI)                |
 | `pnpm secrets:check`                         | secretlint                                                     |
-| `pnpm seed`                                  | Import `seed.json` into `.data/`                               |
+| `pnpm seed`                                  | Import `seed.json` into the local Postgres                     |
+| `docker compose up -d`                       | Start the local Postgres                                       |
 | `pnpm bot`                                   | Run the Telegram bot (reads `.env`)                            |
 | `pnpm eval [name]`                           | Score the models in `apps/evals/candidates.json` (costs money) |
 

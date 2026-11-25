@@ -17,7 +17,7 @@ The same principle covers other facts that change, such as prices, availability 
 
 ## Current state
 
-The core is built (time rules, where you are, your trip's events and when to be at the airport), and so is storage (Postgres, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a real model, `gpt-oss:20b` through Ollama, chosen by the evals (`pnpm eval`). Next: deploying it, starting with Postgres in Docker for local development.
+The core is built (time rules, where you are, your trip's events and when to be at the airport), and so is storage (Postgres, in Docker for local development, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a real model, `gpt-oss:20b` through Ollama, chosen by the evals (`pnpm eval`). Next: deploying it.
 
 The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 
@@ -53,6 +53,7 @@ The structure is hexagonal (ports and adapters): the core holds all business log
 | Node.js | 24 LTS     | Pinned in `.nvmrc`. With nvm, run `nvm use` in the repo                                        |
 | pnpm    | 11.28.2    | Pinned in `package.json` (`packageManager`). An installed pnpm 11 switches to it automatically |
 | Git     | any recent | Required for the git hooks                                                                     |
+| Docker  | any recent | Runs the local Postgres (`docker-compose.yml`); not needed for `pnpm test`                     |
 
 ## Getting started
 
@@ -62,6 +63,7 @@ cd ai-travel-agent
 nvm use
 pnpm install   # also installs the git hooks
 pnpm check     # runs every check CI runs
+docker compose up -d   # starts the local Postgres, for `pnpm seed` and `pnpm bot`
 ```
 
 ## Commands
@@ -75,8 +77,9 @@ pnpm check     # runs every check CI runs
 | `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser                                                               |
 | `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid                                                                    |
 | `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                                                                                           |
+| `pnpm test:pg`                                         | The tests, with the storage tests on the local Postgres instead of PGlite, as in CI                              |
 | `pnpm secrets:check`                                   | Scan the repo for committed secrets                                                                              |
-| `pnpm seed`                                            | Load `seed.json` into the local database (`.data/`)                                                              |
+| `pnpm seed`                                            | Load `seed.json` into the local Postgres                                                                         |
 | `pnpm bot`                                             | Run the Telegram bot; settings come from `.env` (see `.env.example`)                                             |
 | `pnpm eval [name]`                                     | Score the models in `apps/evals/candidates.json` on the slice examples (calls real models, so it can cost money) |
 

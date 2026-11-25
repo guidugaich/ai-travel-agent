@@ -74,4 +74,3 @@ The app is built in **slices**. Each slice is a small, complete version you can 
 - Sharing trips with companions.
 - A web or mobile app, which brings the HTTP API. Mobile likely comes first; see "Beyond chat" in [product.md](product.md).
 - More chat channels and languages.
-- A way to look inside the local database when debugging: a `pnpm db "select …"` command that respects the lock, or `@electric-sql/pglite-socket` (0.2.19 on 2026-11-17, untried) so GUI tools such as TablePlus can connect.

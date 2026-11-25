@@ -1,4 +1,4 @@
-import type { PGlite } from "@electric-sql/pglite";
+import type { Sql } from "./sql.ts";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const MIGRATIONS_DIR = fileURLToPath(new URL("./migrations/", import.meta.url));
 
 /** Runs the .sql files not yet applied, in name order, each in its own transaction. Returns their names. */
-export async function migrate(db: PGlite, dir = MIGRATIONS_DIR): Promise<string[]> {
+export async function migrate(db: Sql, dir = MIGRATIONS_DIR): Promise<string[]> {
   await db.exec("create table if not exists migrations (name text primary key)");
   const { rows } = await db.query<{ name: string }>("select name from migrations");
   const applied = new Set(rows.map((row) => row.name));

@@ -4,6 +4,7 @@ import { z } from "zod";
 export interface Config {
   readonly token: string;
   readonly allowedTelegramIds: ReadonlySet<number>;
+  readonly databaseUrl: string;
   /** Null means the stand-in model. */
   readonly llm: {
     readonly baseUrl: string;
@@ -27,6 +28,7 @@ const settings = z.object({
         .map(Number),
     )
     .pipe(z.array(z.int().positive())),
+  DATABASE_URL: z.url(),
   LLM_BASE_URL: z.url().optional(),
   LLM_MODEL: z.string().optional(),
   LLM_API_KEY: z.string().optional(),
@@ -50,6 +52,7 @@ export function loadConfig(
     value: {
       token: parsed.data.TELEGRAM_BOT_TOKEN,
       allowedTelegramIds: new Set(parsed.data.ALLOWED_TELEGRAM_IDS),
+      databaseUrl: parsed.data.DATABASE_URL,
       llm:
         baseUrl === undefined || model === undefined
           ? null
