@@ -9,8 +9,8 @@ export type {
   UserId,
 } from "./domain.ts";
 export { EVENT_KINDS } from "./domain.ts";
-export { beThereBy, eventsOnDay, getNextEvent } from "./events.ts";
-export type { BeThereByAnswer, DayEvents, EventView } from "./events.ts";
+export { eventsOnDay, getNextEvent } from "./events.ts";
+export type { DayEvents, EventView } from "./events.ts";
 export { importTrips } from "./import-trips.ts";
 export type { ImportProblem } from "./import-trips.ts";
 export { currentContext, setLocation, timeInZone } from "./location.ts";

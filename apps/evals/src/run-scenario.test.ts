@@ -1,4 +1,4 @@
-import { lastToolResult, scriptedLlm } from "@ai-travel-agent/agent/testing";
+import { scriptedLlm } from "@ai-travel-agent/agent/testing";
 import { describe, expect, test } from "vitest";
 import { runScenario } from "./run-scenario.ts";
 import { SCENARIOS, type Scenario } from "./scenarios.ts";
@@ -35,8 +35,6 @@ describe("runScenario", () => {
   test("the scenario's world is set up, earlier messages included", async () => {
     const llm = scriptedLlm([
       call("get_next_event", { kind: "any" }),
-      (request) =>
-        call("be_there_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {
         text: "Be at the airport by 14:05 tomorrow, in 1 day, 3 h 53 min: at the airport 3 h before an international flight.",
       },

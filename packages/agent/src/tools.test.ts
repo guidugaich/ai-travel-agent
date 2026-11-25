@@ -29,14 +29,13 @@ async function setup(
 }
 
 describe("the tools the model sees", () => {
-  test("five tools, each described, with a JSON Schema for its arguments", async () => {
+  test("four tools, each described, with a JSON Schema for its arguments", async () => {
     const { tools } = await setup();
     expect(tools.map((tool) => tool.definition.name)).toEqual([
       "time_in_zone",
       "set_my_location",
       "get_next_event",
       "events_on_day",
-      "be_there_by",
     ]);
     expect(tools.every((tool) => tool.definition.description.length > 20)).toBe(true);
     expect(tools[2]?.definition.parameters).toMatchObject({
@@ -58,9 +57,9 @@ describe("the tools the model sees", () => {
 
   test("arguments that don't match are refused, saying what's wrong", async () => {
     const { call } = await setup();
-    const result = await call("be_there_by", { event_id: 42 });
+    const result = await call("time_in_zone", { zone: 42 });
     expect(result.ok).toBe(false);
-    expect(result.ok ? "" : result.error).toContain("event_id");
+    expect(result.ok ? "" : result.error).toContain("zone");
   });
 });
 
@@ -126,18 +125,16 @@ describe("each tool calls its core service", () => {
     });
   });
 
-  test("be_there_by, with the id from get_next_event (example 4)", async () => {
+  test("get_next_event says when to be at the airport (example 4)", async () => {
     const { call } = await setup();
-    const next = await call("get_next_event", { kind: "any" });
-    const { id } = (next.ok ? next.value : {}) as { id?: string };
-
-    expect(await call("be_there_by", { event_id: id })).toMatchObject({
+    expect(await call("get_next_event", { kind: "flight" })).toMatchObject({
       ok: true,
       value: {
-        kind: "plan",
-        beThereBy: { localTime: "14:05" },
-        timeUntil: "1 day, 3 h 53 min",
-        rule: "at the airport 3 h before an international flight",
+        beThereBy: {
+          time: { localTime: "14:05" },
+          in: "1 day, 3 h 53 min",
+          rule: "at the airport 3 h before an international flight",
+        },
       },
     });
   });

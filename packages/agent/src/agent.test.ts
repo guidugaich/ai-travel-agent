@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { handleMessage, type AgentDeps } from "./agent.ts";
 import { MAX_MODEL_CALLS } from "./loop.ts";
 import { memoryConversations } from "./testing/memory-conversations.ts";
-import { lastToolResult, scriptedLlm, type ScriptStep } from "./testing/scripted-llm.ts";
+import { scriptedLlm, type ScriptStep } from "./testing/scripted-llm.ts";
 
 const tokyoToHonolulu: NewTrip = {
   title: "Pacific",
@@ -78,8 +78,6 @@ describe("the spec's examples, each with a reply the output check accepts", () =
   test("4: when do I need to leave for it?", async () => {
     const { ask, llm } = await setup([
       call("get_next_event", { kind: "any" }),
-      (request) =>
-        call("be_there_by", { event_id: (lastToolResult(request) as { id: string }).id }),
       {
         text: "Be at the airport by 14:05 tomorrow, in 1 day, 3 h 53 min: at the airport 3 h before an international flight.",
       },

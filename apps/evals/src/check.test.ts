@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { checkRun, type Expectations } from "./check.ts";
 
 const leaveBy: Expectations = {
-  tools: ["be_there_by"],
+  tools: ["get_next_event"],
   contains: ["14:05", "1 day, 3 h 53 min"],
   excludes: [/2:05 pm/i],
 };
@@ -10,7 +10,7 @@ const leaveBy: Expectations = {
 const good = {
   reply: "Be there by 14:05 tomorrow, in 1 day, 3 h 53 min.",
   outcome: "answered",
-  toolsCalled: ["get_next_event", "be_there_by"],
+  toolsCalled: ["get_next_event"],
 } as const;
 
 describe("checkRun", () => {
@@ -27,11 +27,11 @@ describe("checkRun", () => {
       checkRun(leaveBy, {
         reply: "Be there by 2:05 pm.",
         outcome: "fallback",
-        toolsCalled: ["get_next_event"],
+        toolsCalled: [],
       }),
     ).toEqual([
       "outcome: fallback",
-      "didn't call be_there_by",
+      "didn't call get_next_event",
       'missing "14:05"',
       'missing "1 day, 3 h 53 min"',
       "shouldn't match /2:05 pm/i",

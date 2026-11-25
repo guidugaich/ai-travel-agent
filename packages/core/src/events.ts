@@ -32,6 +32,13 @@ export interface EventView {
   readonly duration: string | null;
   /** Null once the event has started. */
   readonly startsIn: string | null;
+  /** When to be there: the start minus a rule per event type. Null for events with no rule. */
+  readonly beThereBy: {
+    readonly time: EventTime;
+    /** Null once that time has passed. */
+    readonly in: string | null;
+    readonly rule: string;
+  } | null;
 }
 
 export type DayEvents =
@@ -44,20 +51,6 @@ export type DayEvents =
   | { readonly kind: "ambiguous"; readonly options: readonly [string, string] }
   | { readonly kind: "unrecognized"; readonly phrase: string }
   | { readonly kind: "unknown_location" };
-
-export type BeThereByAnswer =
-  | {
-      readonly kind: "plan";
-      readonly event: string;
-      readonly beThereBy: EventTime;
-      /** Time until then or, when `late`, how late. */
-      readonly timeUntil: string;
-      readonly late: boolean;
-      readonly startsIn: string | null;
-      /** "at the airport 3 h before an international flight", or null for events with no rule. */
-      readonly rule: string | null;
-    }
-  | { readonly kind: "not_found" };
 
 interface Scheduled {
   readonly event: TripEvent;
@@ -107,29 +100,6 @@ export async function eventsOnDay(userId: UserId, day: string, deps: Deps): Prom
   }
 }
 
-/** When to be at an event: its start minus a rule per event type. Travel time is never guessed. */
-export async function beThereBy(
-  userId: UserId,
-  eventId: string,
-  deps: Deps,
-): Promise<BeThereByAnswer> {
-  const { now, today, schedule } = await load(userId, deps);
-  const found = schedule.find(({ event }) => event.id === eventId);
-  if (found === undefined) return { kind: "not_found" };
-
-  const { event, start } = found;
-  const plan = planBeThereBy({ ...event, start: start.toInstant() }, now);
-  return {
-    kind: "plan",
-    event: event.title,
-    beThereBy: eventTime(plan.at.toZonedDateTimeISO(start.timeZoneId), today),
-    timeUntil: formatDuration(plan.until),
-    late: plan.late,
-    startsIn: startsIn(start, now),
-    rule: formatBufferRule(event, plan.bufferMinutes),
-  };
-}
-
 /** Now, the user's today, and all their events in start order. */
 async function load(userId: UserId, deps: Deps) {
   const now = deps.clock.now();
@@ -151,7 +121,24 @@ function view({ event, start }: Scheduled, now: Temporal.Instant, today: Tempora
     end: end === null ? null : eventTime(end, today),
     duration: end === null ? null : formatDuration(elapsed(start.toInstant(), end.toInstant())),
     startsIn: startsIn(start, now),
+    beThereBy: beThereBy(event, start, now, today),
   } satisfies EventView;
+}
+
+function beThereBy(
+  event: TripEvent,
+  start: Temporal.ZonedDateTime,
+  now: Temporal.Instant,
+  today: Temporal.PlainDate,
+): EventView["beThereBy"] {
+  const plan = planBeThereBy({ ...event, start: start.toInstant() }, now);
+  const rule = formatBufferRule(event, plan.bufferMinutes);
+  if (rule === null) return null;
+  return {
+    time: eventTime(plan.at.toZonedDateTimeISO(start.timeZoneId), today),
+    in: plan.late ? null : formatDuration(plan.until),
+    rule,
+  };
 }
 
 function eventTime(time: Temporal.ZonedDateTime, today: Temporal.PlainDate): EventTime {

@@ -1,5 +1,4 @@
 import {
-  beThereBy,
   EVENT_KINDS,
   eventsOnDay,
   getNextEvent,
@@ -41,7 +40,7 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
     defineTool({
       name: "get_next_event",
       description:
-        'The user\'s next upcoming event. Use kind "any" unless the user names a kind ("my flight" is kind flight). Gives the event\'s id, and its times ready to repeat.',
+        'The user\'s next upcoming event. Use kind "any" unless the user names a kind ("my flight" is kind flight). Gives its times ready to repeat, including when to be at the airport, station or port (beThereBy) and its rule. You can\'t know how long the user takes to get there: never estimate a travel time or a time to leave home.',
       input: z.strictObject({
         // Required: small models fill an optional field with placeholders ("", "?", "null").
         kind: z
@@ -61,13 +60,6 @@ export function createTools(userId: UserId, deps: Deps): readonly Tool[] {
         day: z.string().describe("today, tomorrow, a weekday name such as friday, or YYYY-MM-DD"),
       }),
       run: async ({ day }) => ({ ok: true, value: await eventsOnDay(userId, day, deps) }),
-    }),
-    defineTool({
-      name: "be_there_by",
-      description:
-        "When the user should be at the airport, station or port for an event: its start minus a rule per event type. Give the time together with its rule, as written. You can't know how long it takes the user to get there, so never estimate a travel time or a time to leave home. Get event_id from get_next_event or events_on_day.",
-      input: z.strictObject({ event_id: z.string() }),
-      run: async ({ event_id }) => ({ ok: true, value: await beThereBy(userId, event_id, deps) }),
     }),
   ];
 }

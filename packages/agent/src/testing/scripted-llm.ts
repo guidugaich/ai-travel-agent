@@ -33,9 +33,3 @@ export function scriptedLlm(
     },
   };
 }
-
-/** The last tool result the model was sent, parsed. */
-export function lastToolResult(request: ChatRequest): unknown {
-  const message = request.messages.findLast((candidate) => candidate.role === "tool");
-  return message === undefined ? undefined : JSON.parse(message.content);
-}
