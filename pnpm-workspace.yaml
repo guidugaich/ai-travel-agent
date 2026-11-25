@@ -1,5 +1,6 @@
 packages:
   - packages/*
   - apps/telegram-bot
+  - apps/evals
 allowBuilds:
   lefthook: false

@@ -16,9 +16,13 @@
     "deps:graph": "depcruise packages apps --output-type mermaid --collapse \"^(packages|apps)/[^/]+\"",
     "typecheck": "pnpm -r typecheck && tsc -p tsconfig.json",
     "test": "vitest run",
+    "test:pg": "TEST_DATABASE_URL=postgresql://postgres@localhost:5432/postgres vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "secrets:check": "secretlint \"**/*\""
+    "secrets:check": "secretlint \"**/*\"",
+    "seed": "node --env-file-if-exists=.env apps/telegram-bot/src/seed.ts",
+    "bot": "node --env-file-if-exists=.env apps/telegram-bot/src/main.ts",
+    "eval": "node --env-file-if-exists=.env apps/evals/src/main.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

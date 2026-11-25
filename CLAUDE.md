@@ -14,18 +14,19 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
   2. Build it test-first in small steps: a failing test, then the code. Show each new test failing first.
   3. The user tries it, then the next slice begins.
 - **Explain as you go.** The user is learning AI engineering. Explain new concepts in plain web-backend terms, add them to the glossary, and explain every new file in the same message that adds it.
-- **Current step:** the product doc and roadmap are in review. Next: the slice 1 spec.
+- **Evals:** the user always runs `pnpm eval`, never Claude. Claude prepares the changes, says what to run, and reads `apps/evals/results/` afterwards.
+- **Current step:** building slice 1, following the build order in its spec ([docs/slices/01-time-questions.md](docs/slices/01-time-questions.md)).
 
 ## Principles
 
 - The LLM never knows the time or does time arithmetic. Deterministic code does, and the model calls it as tools. The same goes for other facts that change: prices, availability, entry rules.
-- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time, and the active trip.
+- Every turn gets a context preamble computed by code: UTC now, the user's timezone with confidence and source, local time, the active trip, and the next trip if one is coming up.
 - Future events are stored as local wall time plus an IANA zone; UTC is derived when needed. Durations are computed, never stored.
 - Ambiguity leads to a clarifying question, never a guess.
 - The plan changes only through core services that validate the change and return a diff. Ambiguous or destructive changes need the user's confirmation.
 - No code reads the system clock; a Clock is injected.
 - The agent depends on our own LLM port, and vendor SDKs live only in adapters. Evals decide which model to use.
-- Privacy by design: no secrets or personal data in the repo, logs or test data.
+- Privacy by design: no secrets or personal data in the repo, logs or test data. Follow the GDPR checklist in [docs/product.md](docs/product.md#privacy-eu-gdpr).
 
 ## Architecture rules (hexagonal)
 
@@ -33,30 +34,36 @@ Product: [docs/product.md](docs/product.md). Order of work: [docs/roadmap.md](do
 - Dependencies point inwards: `apps/*` → `packages/agent` → `packages/core`.
 - Core services speak domain language (`userId`, `tripId`), never channel concepts such as a Telegram chat id. Adapters map identities.
 - Every plan change goes through a core service. Agent tools are thin wrappers over them.
-- Ports are defined by the side that needs them. Driven adapters (database, clock, LLM provider) live in the app until a second app needs them.
+- Ports are defined by the side that needs them. Driven adapters (database, clock) live in the app until a second app needs them. The LLM adapter already has two users, the bot and the evals, so it's a package: `packages/openai-compatible`.
 
 ## Commands
 
 Node comes from `.nvmrc` (`nvm use`), and pnpm is pinned in `package.json`.
 
-| Command                                      | Purpose                            |
-| -------------------------------------------- | ---------------------------------- |
-| `pnpm check`                                 | Everything CI runs                 |
-| `pnpm format` / `format:check`               | Prettier                           |
-| `pnpm lint`                                  | ESLint (type-aware)                |
-| `pnpm typecheck`                             | TypeScript, all workspaces         |
-| `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph |
-| `pnpm test` / `test:watch` / `test:coverage` | Vitest                             |
-| `pnpm secrets:check`                         | secretlint                         |
+| Command                                      | Purpose                                                        |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `pnpm check`                                 | Everything CI runs                                             |
+| `pnpm format` / `format:check`               | Prettier                                                       |
+| `pnpm lint`                                  | ESLint (type-aware)                                            |
+| `pnpm typecheck`                             | TypeScript, all workspaces                                     |
+| `pnpm deps:check` / `deps:graph`             | Package boundaries / Mermaid graph                             |
+| `pnpm test` / `test:watch` / `test:coverage` | Vitest                                                         |
+| `pnpm test:pg`                               | Tests, storage on the local Postgres (as in CI)                |
+| `pnpm secrets:check`                         | secretlint                                                     |
+| `pnpm seed`                                  | Import `seed.json` into the local Postgres                     |
+| `docker compose up -d`                       | Start the local Postgres                                       |
+| `pnpm bot`                                   | Run the Telegram bot (reads `.env`)                            |
+| `pnpm eval [name]`                           | Score the models in `apps/evals/candidates.json` (costs money) |
 
 ## Conventions
 
 - TypeScript strict, no `any`, exhaustive switches, zod to validate data at boundaries.
 - Tests sit next to the code as `*.test.ts`.
+- Node runs the TypeScript directly, with no build step: relative imports end in `.ts`, and only syntax Node can strip is allowed (no `enum`, no constructor parameter properties).
 - Write an ADR in `docs/adr/` only for decisions that are costly to reverse. Smaller decisions go in the slice spec.
 - Never invent a library API. Read the installed package or its docs, and verify by running code.
 - Code comments: rare, one line, only for non-obvious reasoning.
-- Conventional commit messages, as a habit (not enforced).
+- Conventional commit messages, one line only, as a habit (not enforced). Reasoning goes in the slice spec or an ADR.
 - When conventions or boundaries change, update this file and ARCHITECTURE.md.
 
 ## Git

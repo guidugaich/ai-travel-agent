@@ -17,19 +17,19 @@ The same principle covers other facts that change, such as prices, availability 
 
 ## Current state
 
-The tooling and guardrails are in place. There's no product code yet.
+The core is built (time rules, where you are, your trip's events and when to be at the airport), and so is storage (Postgres, in Docker for local development, plus `pnpm seed` to load a trip). So is the agent loop (tools, preamble, output check, conversation history), tested with a scripted fake model. The Telegram bot runs locally (`pnpm bot`) with a real model, `gpt-oss:20b` through Ollama, chosen by the evals (`pnpm eval`). Next: deploying it.
 
 The app is built in **slices**: small, complete versions you can actually use, each adding one capability. See the [roadmap](docs/roadmap.md).
 
-| Step                                                                                     | Status    |
-| ---------------------------------------------------------------------------------------- | --------- |
-| Tooling: monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI | Done      |
-| [Product](docs/product.md) and [roadmap](docs/roadmap.md)                                | In review |
-| Slice 1: answer time questions about a trip                                              | Next      |
-| Slice 2: change the plan, with preview, confirm and undo                                 | Planned   |
-| Slice 3: turn a loose idea into a draft trip                                             | Planned   |
-| Slice 4: personalization                                                                 | Planned   |
-| Slice 5: affiliate booking links                                                         | Planned   |
+| Step                                                                                     | Status      |
+| ---------------------------------------------------------------------------------------- | ----------- |
+| Tooling: monorepo, strict TypeScript, lint, format, boundary rules, tests, git hooks, CI | Done        |
+| [Product](docs/product.md) and [roadmap](docs/roadmap.md)                                | Done        |
+| Slice 1: answer time questions about a trip ([spec](docs/slices/01-time-questions.md))   | In progress |
+| Slice 2: change the plan, with preview, confirm and undo                                 | Planned     |
+| Slice 3: turn a loose idea into a draft trip                                             | Planned     |
+| Slice 4: personalization                                                                 | Planned     |
+| Slice 5: affiliate booking links                                                         | Planned     |
 
 ## Repository layout
 
@@ -37,8 +37,10 @@ The app is built in **slices**: small, complete versions you can actually use, e
 packages/
   core/           business logic: domain, time rules, services, ports; no I/O, depends on nothing
   agent/          LLM loop, tools, prompts; provider-agnostic
+  openai-compatible/  LLM adapter for the "chat completions" HTTP format (OpenAI, Ollama, many others)
 apps/
   telegram-bot/   Telegram adapter and the program's entry point
+  evals/          `pnpm eval`: scores LLMs on the slice's examples
   web/, mobile/   reserved for future clients
 ```
 
@@ -51,6 +53,7 @@ The structure is hexagonal (ports and adapters): the core holds all business log
 | Node.js | 24 LTS     | Pinned in `.nvmrc`. With nvm, run `nvm use` in the repo                                        |
 | pnpm    | 11.28.2    | Pinned in `package.json` (`packageManager`). An installed pnpm 11 switches to it automatically |
 | Git     | any recent | Required for the git hooks                                                                     |
+| Docker  | any recent | Runs the local Postgres (`docker-compose.yml`); not needed for `pnpm test`                     |
 
 ## Getting started
 
@@ -60,20 +63,25 @@ cd ai-travel-agent
 nvm use
 pnpm install   # also installs the git hooks
 pnpm check     # runs every check CI runs
+docker compose up -d   # starts the local Postgres, for `pnpm seed` and `pnpm bot`
 ```
 
 ## Commands
 
-| Command                                                | What it does                                       |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| `pnpm check`                                           | Everything below, in the same order as CI          |
-| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting           |
-| `pnpm lint`                                            | ESLint with type-aware rules                       |
-| `pnpm typecheck`                                       | TypeScript in every workspace                      |
-| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser |
-| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid      |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                             |
-| `pnpm secrets:check`                                   | Scan the repo for committed secrets                |
+| Command                                                | What it does                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `pnpm check`                                           | Everything below, in the same order as CI                                                                        |
+| `pnpm format` / `pnpm format:check`                    | Format with Prettier / verify formatting                                                                         |
+| `pnpm lint`                                            | ESLint with type-aware rules                                                                                     |
+| `pnpm typecheck`                                       | TypeScript in every workspace                                                                                    |
+| `pnpm deps:check`                                      | Enforce package boundaries with dependency-cruiser                                                               |
+| `pnpm deps:graph`                                      | Print the package dependency graph as Mermaid                                                                    |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                                                                                                           |
+| `pnpm test:pg`                                         | The tests, with the storage tests on the local Postgres instead of PGlite, as in CI                              |
+| `pnpm secrets:check`                                   | Scan the repo for committed secrets                                                                              |
+| `pnpm seed`                                            | Load `seed.json` into the local Postgres                                                                         |
+| `pnpm bot`                                             | Run the Telegram bot; settings come from `.env` (see `.env.example`)                                             |
+| `pnpm eval [name]`                                     | Score the models in `apps/evals/candidates.json` on the slice examples (calls real models, so it can cost money) |
 
 ## Tooling and guardrails
 

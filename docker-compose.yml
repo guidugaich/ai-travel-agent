@@ -1,0 +1,15 @@
+# Postgres for local development. `docker compose up -d` starts it; `docker compose down` stops it and keeps the data.
+services:
+  postgres:
+    image: postgres:18.7
+    environment:
+      POSTGRES_DB: dev
+      # No password: the port below is open to this computer only.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:

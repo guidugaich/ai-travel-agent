@@ -19,6 +19,18 @@ export default defineConfig([
     rules: {
       // TypeScript (with checkJs) already reports undefined names.
       "no-undef": "off",
+      // Same as the strict preset, except numbers are allowed in template strings.
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowAny: false,
+          allowBoolean: false,
+          allowNever: false,
+          allowNullish: false,
+          allowNumber: true,
+          allowRegExp: false,
+        },
+      ],
       "@typescript-eslint/switch-exhaustiveness-check": [
         "error",
         { allowDefaultCaseForExhaustiveSwitch: false, requireDefaultForNonUnion: true },

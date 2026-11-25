@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@ai-travel-agent/core": "workspace:*"
+    "@ai-travel-agent/core": "workspace:*",
+    "zod": "4.6.7"
   }
 }

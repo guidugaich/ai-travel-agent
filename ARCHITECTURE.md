@@ -6,7 +6,7 @@ How the system is put together. Update it whenever a slice moves a boundary.
 
 You talk to the agent in Telegram. Each message goes through an **agent loop**:
 
-1. Code builds a context preamble: the current time, your timezone, the active trip.
+1. Code builds a context preamble: the current time, your timezone, the active trip and the next one.
 2. The conversation and a list of tools go to a language model.
 3. Whatever tools the model asks for run as our own deterministic code.
 4. The loop replies.
@@ -60,7 +60,7 @@ block-beta
   - Telegram messages go to the agent.
   - Things that need no language understanding go straight to the core: identifying the user, shared locations, and button taps such as **Confirm**.
   - A future HTTP API calls the core's services directly, with no LLM involved.
-- **Driven adapters** implement the application's outbound **ports**, which are interfaces for what the application needs. The core defines the Clock and the repositories; the agent defines the LLM port. Tests replace these adapters with fakes.
+- **Driven adapters** implement the application's outbound **ports**, which are interfaces for what the application needs. The core defines the Clock and the repositories; the agent defines the LLM port and the conversation store. Tests replace these adapters with fakes. The Postgres adapters talk to a small `Sql` interface: the app gets a real Postgres through `pg` (in Docker locally), and the storage tests get PGlite, or a real Postgres in CI.
 
 The arrows show who calls whom at runtime. Code dependencies always point inwards, so the application never imports an adapter.
 
@@ -72,7 +72,7 @@ The arrows show who calls whom at runtime. Code dependencies always point inward
 4. **Only the user confirms a change.** Button taps go from the adapter straight to the core, so nothing the model has read can approve a change. A test arrives in slice 2.
 5. **No code reads the system clock;** a Clock is injected. Enforced by ESLint.
 6. **Times shown to users are computed by code,** never typed by the model. An output check and evals arrive in slice 1.
-7. **Driven adapters live in `apps/telegram-bot`** until a second app needs them.
+7. **Driven adapters live in `apps/telegram-bot`** until a second app needs them. The LLM adapter is already shared, in `packages/openai-compatible`, because the evals use it too.
 
 ## Adding a client
 
@@ -94,12 +94,13 @@ sequenceDiagram
   participant D as Database
 
   U->>T: When do I need to leave for my flight?
-  T->>B: webhook (HTTP POST)
+  B->>T: any new messages? (long polling)
+  T-->>B: new message
   B->>A: message from user
   A->>C: get context for the preamble
   C->>D: read user's timezone and active trip
   D-->>C: timezone (with source), trip
-  C-->>A: now (UTC from the Clock), timezone, local time, active trip
+  C-->>A: now (UTC from the Clock), timezone, local time, active and next trip
   A->>L: conversation, preamble and tool definitions
   L-->>A: tool call: next event
   A->>C: query next event
